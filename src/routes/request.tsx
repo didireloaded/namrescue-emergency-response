@@ -41,7 +41,7 @@ function Request() {
       <div className="relative z-10 mt-auto px-5 pb-safe">
         <h1 className="px-2.5 text-[38px] font-bold leading-[1.05] tracking-tight text-on-photo">Request<br />an Ambulance</h1>
         <div className="relative mt-5 h-[clamp(180px,26dvh,220px)] overflow-hidden rounded-[28px] bg-sheet isolate">
-          <LazyMap mode="locate" center={s.location.pos} pickEnabled onPick={(pos) => demo.setLocation({ pos, label: "Pinned location", source: "manual" })} className="absolute inset-0" label="Your location map" />
+          <LazyMap mode="locate" center={s.location.pos} accuracy={s.location.source === "gps" ? s.location.accuracy : undefined} pickEnabled onPick={(pos) => demo.setLocation({ pos, label: "Pinned location", source: "manual" })} className="absolute inset-0" label="Your location map" />
           <button onClick={geo.locate} aria-label="Use my location" className="press absolute right-3 top-3 z-[500] grid size-11 place-items-center rounded-full bg-sheet text-locate shadow-card">{geo.state === "locating" ? <Loader2 className="size-5 animate-spin" /> : <LocateFixed className="size-5" />}</button>
           <button onClick={() => setPick(true)} className="absolute inset-x-2 bottom-2 z-[500] flex min-h-14 items-center justify-between rounded-[20px] bg-sheet px-4 text-left text-sheet-foreground shadow-card">
             <span><span className="block text-[12px] text-sheet-muted">{failed ? "Location unavailable — tap to set" : "Your location"}</span><span className="text-[15px] font-semibold">{s.location.label}</span></span>
