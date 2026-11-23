@@ -54,5 +54,5 @@ export async function roadRoute(from: Coordinates, to: Coordinates): Promise<Coo
   const data = await response.json() as { routes?: { geometry?: { coordinates?: number[][] } }[] };
   const coords = data.routes?.[0]?.geometry?.coordinates;
   if (!Array.isArray(coords) || coords.length < 2) return null;
-  return coords.filter((p) => p.length >= 2 && Number.isFinite(p[0]) && Number.isFinite(p[1])).map((p) => [p[1] as number, p[0] as number]);
+  return coords.filter((p) => p.length >= 2 && Number.isFinite(p[0]) && Number.isFinite(p[1])).map((p) => [p[1] as number, p[0] as number] as Coordinates);
 }
