@@ -100,7 +100,7 @@ export const demo = {
   setAccidentDetails: (patch: Partial<AccidentDetails>) => set({ accident: { ...state.accident, ...patch } }),
   setPersonDetails: (patch: Partial<PersonDetails>) => set({ person: { ...state.person, ...patch } }),
   setPatientCondition: (patientCondition: string) => set({ patientCondition }),
-  setRemoteIncident: (remoteIncident: boolean) => set({ remoteIncident }),
+  setRemoteIncident: (remoteIncident: boolean) => { if (isActive(state.status)) return false; set({ remoteIncident }); return true; },
   setFeedback: (rating: number, feedback: string) => {
     if (state.status !== "completed" || !Number.isInteger(rating) || rating < 1 || rating > 5) return false;
     const safe = feedback.trim().slice(0, 500);
