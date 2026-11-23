@@ -7,7 +7,7 @@ import { citizen, useCitizen } from "@/lib/citizen-store";
 
 export const Route = createFileRoute("/medical")({
   head: () => ({ meta: [
-    { title: "Medical ID and Medical Aid | NamRescue" },
+    { title: "Medical ID and Medical Aid | CareNear" },
     { name: "description", content: "Optional emergency health information and medical coverage." },
   ] }),
   component: Medical,
