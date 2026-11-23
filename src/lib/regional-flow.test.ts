@@ -89,6 +89,8 @@ describe("emergency location is not home location", () => {
     demo.confirm();
     demo.assign();
     demo.arrive();
+    expect(demo.setFeedback(4, "Too early")).toBe(false);
+    expect(demo.complete()).toBe(true);
     expect(demo.setFeedback(6, "Too many stars")).toBe(false);
     expect(demo.setFeedback(4, "Thank you")).toBe(true);
     expect(demo.get().history[0]?.rating).toBe(4);
