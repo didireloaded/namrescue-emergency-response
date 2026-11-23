@@ -9,8 +9,10 @@ import {
   type ErrorComponentProps,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { useRouterState } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
+import { StatusBar, HomeIndicator, DemoBadge } from "../components/nr/chrome";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
 function NotFoundComponent() {
@@ -80,15 +82,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     // twitter:image here: every page without its own would inherit the root's preview image.
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
+      { name: "viewport-fit", content: "cover" },
+      { name: "theme-color", content: "#101722" },
+      { title: "NamRescue — Emergency ambulance prototype" },
+      { name: "description", content: "Interactive demo prototype of an emergency ambulance request app for Namibia." },
+      { property: "og:title", content: "NamRescue — Emergency ambulance prototype" },
+      { property: "og:description", content: "Interactive demo prototype of an emergency ambulance request app for Namibia." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
       {
@@ -123,8 +125,50 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <PhoneFrame>
+        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+        <Outlet />
+      </PhoneFrame>
     </QueryClientProvider>
+  );
+}
+
+const SCREENS = [
+  { to: "/", n: "01", label: "Home / SOS" },
+  { to: "/request", n: "02", label: "Confirm location" },
+  { to: "/tracking", n: "03", label: "Tracking" },
+  { to: "/team", n: "04", label: "Response team" },
+  { to: "/arrived", n: "05", label: "Arrived" },
+] as const;
+
+const LIGHT_ROUTES = ["/summary", "/history", "/profile"];
+
+function PhoneFrame({ children }: { children: ReactNode }) {
+  const path = useRouterState({ select: (s) => s.location.pathname });
+  return (
+    <div className="min-h-dvh md:flex md:items-center md:justify-center md:gap-14 md:py-8">
+      <aside className="hidden w-56 md:block" aria-label="Screen picker">
+        <p className="text-[13px] font-semibold text-on-photo">NamRescue</p>
+        <p className="mb-6 text-[12px] text-muted-foreground">Interactive prototype · not a live service</p>
+        <ul className="space-y-1">
+          {SCREENS.map((s) => (
+            <li key={s.to}>
+              <Link to={s.to} className={"flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] transition-colors " + (path === s.to ? "bg-ink-2 text-on-photo" : "text-muted-foreground hover:text-on-photo")}>
+                <span className="tabular text-[11px] text-sos-bright">{s.n}</span>{s.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </aside>
+      <div className="device">
+        <div className="device-screen device-screen-box">
+          <StatusBar />
+          <DemoBadge />
+          {children}
+          <HomeIndicator dark={LIGHT_ROUTES.includes(path)} />
+        </div>
+      </div>
+      <div className="hidden w-56 md:block" />
+    </div>
   );
 }

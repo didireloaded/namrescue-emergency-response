@@ -10,33 +10,141 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ArrivedRouteImport } from './routes/arrived'
+import { Route as HistoryRouteImport } from './routes/history'
+import { Route as MapRouteImport } from './routes/map'
+import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as RequestRouteImport } from './routes/request'
+import { Route as SummaryRouteImport } from './routes/summary'
+import { Route as TeamRouteImport } from './routes/team'
+import { Route as TrackingRouteImport } from './routes/tracking'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ArrivedRoute = ArrivedRouteImport.update({
+  id: '/arrived',
+  path: '/arrived',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HistoryRoute = HistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MapRoute = MapRouteImport.update({
+  id: '/map',
+  path: '/map',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RequestRoute = RequestRouteImport.update({
+  id: '/request',
+  path: '/request',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SummaryRoute = SummaryRouteImport.update({
+  id: '/summary',
+  path: '/summary',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TeamRoute = TeamRouteImport.update({
+  id: '/team',
+  path: '/team',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TrackingRoute = TrackingRouteImport.update({
+  id: '/tracking',
+  path: '/tracking',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/arrived': typeof ArrivedRoute
+  '/history': typeof HistoryRoute
+  '/map': typeof MapRoute
+  '/profile': typeof ProfileRoute
+  '/request': typeof RequestRoute
+  '/summary': typeof SummaryRoute
+  '/team': typeof TeamRoute
+  '/tracking': typeof TrackingRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/arrived': typeof ArrivedRoute
+  '/history': typeof HistoryRoute
+  '/map': typeof MapRoute
+  '/profile': typeof ProfileRoute
+  '/request': typeof RequestRoute
+  '/summary': typeof SummaryRoute
+  '/team': typeof TeamRoute
+  '/tracking': typeof TrackingRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/arrived': typeof ArrivedRoute
+  '/history': typeof HistoryRoute
+  '/map': typeof MapRoute
+  '/profile': typeof ProfileRoute
+  '/request': typeof RequestRoute
+  '/summary': typeof SummaryRoute
+  '/team': typeof TeamRoute
+  '/tracking': typeof TrackingRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/arrived'
+    | '/history'
+    | '/map'
+    | '/profile'
+    | '/request'
+    | '/summary'
+    | '/team'
+    | '/tracking'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/arrived'
+    | '/history'
+    | '/map'
+    | '/profile'
+    | '/request'
+    | '/summary'
+    | '/team'
+    | '/tracking'
+  id:
+    | '__root__'
+    | '/'
+    | '/arrived'
+    | '/history'
+    | '/map'
+    | '/profile'
+    | '/request'
+    | '/summary'
+    | '/team'
+    | '/tracking'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ArrivedRoute: typeof ArrivedRoute
+  HistoryRoute: typeof HistoryRoute
+  MapRoute: typeof MapRoute
+  ProfileRoute: typeof ProfileRoute
+  RequestRoute: typeof RequestRoute
+  SummaryRoute: typeof SummaryRoute
+  TeamRoute: typeof TeamRoute
+  TrackingRoute: typeof TrackingRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +156,75 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/arrived': {
+      id: '/arrived'
+      path: '/arrived'
+      fullPath: '/arrived'
+      preLoaderRoute: typeof ArrivedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/history': {
+      id: '/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof HistoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/map': {
+      id: '/map'
+      path: '/map'
+      fullPath: '/map'
+      preLoaderRoute: typeof MapRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/request': {
+      id: '/request'
+      path: '/request'
+      fullPath: '/request'
+      preLoaderRoute: typeof RequestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/summary': {
+      id: '/summary'
+      path: '/summary'
+      fullPath: '/summary'
+      preLoaderRoute: typeof SummaryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/team': {
+      id: '/team'
+      path: '/team'
+      fullPath: '/team'
+      preLoaderRoute: typeof TeamRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tracking': {
+      id: '/tracking'
+      path: '/tracking'
+      fullPath: '/tracking'
+      preLoaderRoute: typeof TrackingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ArrivedRoute: ArrivedRoute,
+  HistoryRoute: HistoryRoute,
+  MapRoute: MapRoute,
+  ProfileRoute: ProfileRoute,
+  RequestRoute: RequestRoute,
+  SummaryRoute: SummaryRoute,
+  TeamRoute: TeamRoute,
+  TrackingRoute: TrackingRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
