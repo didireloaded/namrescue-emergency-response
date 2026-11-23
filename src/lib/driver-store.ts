@@ -41,6 +41,7 @@ export interface DriverTripRecord {
   completedAt: number;
   area: string;
   destination: string;
+  timeline: { stage: DriverStage; time: number }[];
 }
 export interface DriverState {
   stage: DriverStage;
@@ -147,7 +148,7 @@ export const driver = {
     set({ stage: "available", assignment: null, events: [] });
     return true;
   },
-  accept: () => state.stage === "offered" && nextStage("accepted"),
+  accept: () => state.stage === "offered" && !state.outOfServiceReason && !state.fatigueBreakRequested && nextStage("accepted"),
   depart: () => state.stage === "accepted" && nextStage("enRoute"),
   sceneArrival: () => state.stage === "enRoute" && nextStage("atScene"),
   beginTransport: () => state.stage === "atScene" && nextStage("transporting"),
@@ -158,7 +159,7 @@ export const driver = {
     set({
       stage: "completed",
       events: [...state.events, { stage: "completed", time: Date.now() }],
-      history: [{ id: caseFile.id, completedAt: Date.now(), area: caseFile.location, destination: caseFile.hospital }, ...state.history],
+      history: [{ id: caseFile.id, completedAt: Date.now(), area: caseFile.location, destination: caseFile.hospital, timeline: [...state.events, { stage: "completed", time: Date.now() }] }, ...state.history],
     });
     return true;
   },
@@ -170,7 +171,7 @@ export const driver = {
   reportDefect: (reason: string) => {
     const clean = reason.trim().slice(0, 280);
     if (!clean) return false;
-    set({ outOfServiceReason: clean });
+    set({ outOfServiceReason: clean, stage: state.stage === "available" ? "offDuty" : state.stage });
     return true;
   },
   setSupplyCount: (key: SupplyKey, count: number) => {
