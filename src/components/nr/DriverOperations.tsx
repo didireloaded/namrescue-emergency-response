@@ -4,7 +4,7 @@ import {
   FileWarning, Hospital, MapPin, MessageCircle, Mic, PackageSearch,
   Phone, Radio, ShieldAlert, ShieldCheck, Truck, Video, WifiOff,
 } from "lucide-react";
-import { driver, SUPPLY_KEYS, supplyIssue, useDriver } from "@/lib/driver-store";
+import { driver, SUPPLY_KEYS, supplyIssue, dateOverdue, useDriver } from "@/lib/driver-store";
 import { useConnectivity } from "@/lib/connectivity";
 
 const tile = "rounded-[22px] border border-[#E4EAF1] bg-white";
@@ -92,12 +92,13 @@ export function DriverInventoryPanel() {
       <div className="mt-4 divide-y divide-[#E9EDF1]">{SUPPLY_KEYS.map(key=>{
         const item=state.supplies[key];
         const problem=supplyIssue(item);
-        return <div key={key} className="flex min-h-[75px] items-center gap-3 py-2">
+        return <div key={key} className="min-h-[75px] py-3"><div className="flex items-center gap-3">
           <div className="min-w-0 flex-1"><p className="text-[14px] font-semibold">{item.label}</p><p className="mt-1 text-[12px] text-[#718296]">Minimum {item.minimum} · {problem||"Stock sufficient"}</p></div>
           <div className="flex items-center gap-1"><button aria-label={"Reduce "+item.label} disabled={stockLocked || item.count===0} onClick={()=>driver.setSupplyCount(key,item.count-1)} className="grid size-10 place-items-center rounded-xl border border-[#DBE4EB] disabled:opacity-30">−</button>
             <span className={"w-7 text-center text-[15px] font-bold "+(problem?"text-[#BF2938]":"text-[#233D58]")}>{item.count}</span>
             <button aria-label={"Increase "+item.label} disabled={stockLocked} onClick={()=>driver.setSupplyCount(key,item.count+1)} className="grid size-10 place-items-center rounded-xl border border-[#DBE4EB] disabled:opacity-30">+</button>
-          </div>
+          </div></div>
+          <label className="mt-2 flex items-center gap-3 text-[12px] text-[#6C7D90]"><span>Expiry (optional)</span><input type="date" disabled={stockLocked} value={item.expiry ?? ""} onChange={e=>driver.setSupplyExpiry(key,e.target.value||null)} className="min-h-10 rounded-xl border border-[#DFE7ED] bg-white px-2 text-[12px] disabled:opacity-50"/></label>
         </div>;
       })}</div>
       {stockLocked && <p className={"mt-3 "+support}>Stock editing is locked while a response is active.</p>}
@@ -116,7 +117,14 @@ export function DriverInventoryPanel() {
             <button onClick={()=>setConfirm(false)} className="min-h-11 w-full text-[13px] font-semibold">Keep editing</button>
           </div>}
       </>}
-      <p className={"mt-3 "+support}>Maintenance reminders, expiry validation and fleet defect approval need official inventory records and management access.</p>
+      <div className="mt-4 border-t border-[#E5EAF0] pt-4">
+        <p className="text-[14px] font-bold">Next vehicle service</p>
+        <label className="mt-2 flex items-center justify-between gap-2 text-[13px] text-[#718097]">Training due date
+          <input type="date" value={state.maintenanceDue??""} disabled={stockLocked} onChange={e=>driver.setMaintenanceDue(e.target.value||null)} className="min-h-11 rounded-xl border border-[#DFE7ED] bg-white px-3 text-[13px] disabled:opacity-50" />
+        </label>
+        {dateOverdue(state.maintenanceDue) && <p className="mt-2 rounded-xl bg-[#FFF0F1] p-3 text-[13px] font-semibold text-[#A02C3A]">Service overdue. New training assignments are blocked.</p>}
+      </div>
+      <p className={"mt-3 "+support}>Expiry and maintenance fields are local training examples. Real reminders, verified stock and fleet defect approval need backend records and management permissions.</p>
     </section>
   </div>;
 }
