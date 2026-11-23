@@ -13,6 +13,12 @@ export interface DemoLocation {
   accuracy?: number;
   observedAt?: number;
 }
+export interface PersonDetails {
+  name: string;
+  approximateAge: string;
+  relationship: string;
+  callbackNumber: string;
+}
 export interface AccidentDetails {
   injuredCount: string;
   vehicleCount: string;
@@ -35,6 +41,7 @@ export interface DemoState {
   location: DemoLocation;
   incidentArea: HomeArea;
   accident: AccidentDetails;
+  person: PersonDetails;
   patientCondition: string;
   forOther: boolean;
   remoteIncident: boolean;
@@ -55,6 +62,7 @@ const initial: DemoState = {
   location: { pos: WINDHOEK, label: "Windhoek, Namibia", source: "default" },
   incidentArea: { ...EMPTY_AREA },
   accident: { injuredCount: "", vehicleCount: "", road: "", direction: "", danger: "", onScene: "unsure" },
+  person: { name: "", approximateAge: "", relationship: "", callbackNumber: "" },
   patientCondition: "",
   forOther: false,
   remoteIncident: false,
@@ -88,6 +96,7 @@ export const demo = {
   setLocation: (location: DemoLocation) => { if (isActive(state.status)) return false; set({ location, incidentArea: { ...EMPTY_AREA } }); return true; },
   setIncidentArea: (incidentArea: HomeArea) => { if (isActive(state.status)) return false; set({ incidentArea }); return true; },
   setAccidentDetails: (patch: Partial<AccidentDetails>) => set({ accident: { ...state.accident, ...patch } }),
+  setPersonDetails: (patch: Partial<PersonDetails>) => set({ person: { ...state.person, ...patch } }),
   setPatientCondition: (patientCondition: string) => set({ patientCondition }),
   setRemoteIncident: (remoteIncident: boolean) => set({ remoteIncident }),
   setFeedback: (rating: number, feedback: string) => {
@@ -109,6 +118,7 @@ export const demo = {
       note: "",
       incidentArea: { ...EMPTY_AREA },
       accident: { injuredCount: "", vehicleCount: "", road: "", direction: "", danger: "", onScene: "unsure" },
+      person: { name: "", approximateAge: "", relationship: "", callbackNumber: "" },
       patientCondition: "",
       rating: 0,
       feedback: "",
