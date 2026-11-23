@@ -243,7 +243,7 @@ export default function Profile() {
   </div>;
 }
 
-function MedicalForm() {
+export function MedicalForm() {
   const { medical } = useCitizen();
   return <div className="space-y-4">
     <div><Label>Blood group (if known)</Label><select className={field} value={medical.bloodType} onChange={(e) => citizen.updateMedical({ bloodType: e.target.value })}>
