@@ -245,7 +245,7 @@ const links: { tab: Tab; label: string; Icon: typeof Truck }[]=[
 export default function DriverApp(){
   const state=useDriver();
   const [tab,setTab]=useState<Tab>("home");
-    const title={home:"Driver",dispatch:"Dispatch",vehicle:"Vehicle",activity:"Activity",account:"Profile"}[tab];
+  const title={home:"Driver",dispatch:"Dispatch",vehicle:"Vehicle",activity:"Activity",account:"Profile"}[tab];
   return <div className="flex h-full flex-col bg-[#F6F8FA] text-[#162235]">
     <header className={dark+" shrink-0 px-5 pb-5 pt-safe"}>
       <div className="mt-3 flex items-center justify-between">
