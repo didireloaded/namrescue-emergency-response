@@ -1,0 +1,22 @@
+name: Citizen app checks
+on:
+  push:
+    branches: [main, feat/citizen-app-foundations]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Build
+        run: bun run build
+      - name: Unit tests
+        run: bun run test
