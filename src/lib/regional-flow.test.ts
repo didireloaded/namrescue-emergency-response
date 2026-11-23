@@ -35,6 +35,7 @@ describe("Namibia area and emergency directory", () => {
 beforeEach(() => {
   if (demo.get().status === "received") demo.cancel();
   if (demo.get().status === "assigned") demo.arrive();
+  if (demo.get().status === "arrived") demo.complete();
   demo.start(false);
   demo.setLocation({ pos: WINDHOEK, label: "Map preview", source: "default" });
   citizen.clear();
@@ -83,7 +84,7 @@ describe("emergency location is not home location", () => {
     expect(demo.get().accident.vehicleCount).toBe("2");
     expect(demo.get().accident.injuredCount).toBe("Not sure");
   });
-  it("accepts a rating only after the arrival state", () => {
+  it("accepts a rating only after the completed state", () => {
     expect(demo.setFeedback(5, "Good")).toBe(false);
     demo.setLocation({ pos: WINDHOEK, label: "Scene", source: "manual" });
     demo.confirm();
