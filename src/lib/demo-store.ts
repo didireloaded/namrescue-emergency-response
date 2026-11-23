@@ -3,7 +3,7 @@ import type { LatLng } from "./demo-sim";
 import { EMPTY_AREA, type HomeArea } from "./regions";
 
 /** No emergency request is transmitted by this store. It models the UI flow only. */
-export type RequestStatus = "idle" | "received" | "assigned" | "arrived";
+export type RequestStatus = "idle" | "received" | "assigned" | "arrived" | "completed";
 export type LocationSource = "gps" | "manual" | "default";
 export type EmergencyType = "Medical emergency" | "Road accident" | "Injury" | "Other";
 export interface DemoLocation {
@@ -100,7 +100,7 @@ export const demo = {
   setPatientCondition: (patientCondition: string) => set({ patientCondition }),
   setRemoteIncident: (remoteIncident: boolean) => set({ remoteIncident }),
   setFeedback: (rating: number, feedback: string) => {
-    if (state.status !== "arrived" || !Number.isInteger(rating) || rating < 1 || rating > 5) return false;
+    if (state.status !== "completed" || !Number.isInteger(rating) || rating < 1 || rating > 5) return false;
     const safe = feedback.trim().slice(0, 500);
     set({ rating, feedback: safe, history: state.history.map(entry => entry.id === state.reference ? { ...entry, rating, feedback: safe } : entry) });
     return true;
@@ -148,6 +148,11 @@ export const demo = {
       arrivedAt: at,
       history: [{ id: state.reference ?? String(at), at, label: state.location.label, forOther: state.forOther, type: state.incidentType }, ...state.history],
     });
+    return true;
+  },
+  complete: () => {
+    if (state.status !== "arrived") return false;
+    set({ status: "completed" });
     return true;
   },
   cancel: () => {
