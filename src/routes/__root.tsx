@@ -148,9 +148,10 @@ const SCREENS = [
   { to: "/medical", n: "06", label: "Medical ID" },
   { to: "/profile", n: "07", label: "Citizen profile" },
   { to: "/safety", n: "08", label: "Safety tools" },
+  { to: "/driver", n: "09", label: "Driver workspace" },
 ] as const;
 
-const LIGHT_ROUTES = ["/summary", "/history", "/profile", "/medical", "/safety"];
+const LIGHT_ROUTES = ["/summary", "/history", "/profile", "/medical", "/safety", "/driver"];
 
 function PhoneFrame({ children }: { children: ReactNode }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
