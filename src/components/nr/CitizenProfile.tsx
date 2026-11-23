@@ -251,7 +251,7 @@ export default function Profile() {
             <Note>Live push notifications, dispatch messages, and family tracking need a secure server and approved messaging integration.</Note>
           </>}
           {panel === "help" && <>
-            <div className="rounded-[22px] bg-white p-5"><Phone className="mb-4 size-7 text-[#CC2633]" /><h2 className="text-[20px] font-bold">Emergency calling</h2><p className="mt-2 text-[14px] leading-relaxed text-[#647084]">Telephone access remains essential. Verified Namibia emergency numbers must be configured before the app can open your phone dialer.</p></div>
+            <div className="rounded-[22px] bg-white p-5"><Phone className="mb-4 size-7 text-[#CC2633]" /><h2 className="text-[20px] font-bold">Emergency calling</h2><p className="mt-2 text-[14px] leading-relaxed text-[#647084]">The Call option on Home lists published nationwide numbers and selected local services. Tapping a number opens your phone's dialer. This directory is incomplete and provider coverage must be verified.</p></div>
             <div className="rounded-[22px] bg-white p-5"><Shield className="mb-4 size-6" /><h2 className="text-[17px] font-bold">Service connection</h2><p className={subtitle}>This interface is not yet linked to a government ambulance dispatch centre. Use existing emergency telephone services for real emergencies.</p></div>
           </>}
         </main>
