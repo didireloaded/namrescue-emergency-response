@@ -15,9 +15,9 @@ import { useConnectivity, canCreatePreviewRequest } from "@/lib/connectivity";
 
 export const Route = createFileRoute("/request")({
   head: () => ({ meta: [
-    { title: "Request an Ambulance — NamRescue demo" },
+    { title: "Request an Ambulance — CareNear demo" },
     { name: "description", content: "Confirm your location for a simulated ambulance request." },
-    { property: "og:title", content: "Request an Ambulance — NamRescue demo" },
+    { property: "og:title", content: "Request an Ambulance — CareNear demo" },
     { property: "og:description", content: "Confirm your location for a simulated ambulance request." },
     { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" },
   ] }),
