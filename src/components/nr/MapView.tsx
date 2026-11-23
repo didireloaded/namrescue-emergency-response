@@ -14,6 +14,8 @@ interface Props {
   from?: LatLng;
   progress?: number;
   accuracy?: number | undefined;
+  /** Optional consent-based, foreground-only location trail. */
+  trail?: LatLng[];
   onPick?: (pos: LatLng) => void;
   pickEnabled?: boolean;
   recenterKey?: number;
@@ -21,7 +23,7 @@ interface Props {
   label: string;
 }
 
-export default function MapView({ mode, center, from, progress = 0, accuracy, onPick, pickEnabled, recenterKey = 0, className, label }: Props) {
+export default function MapView({ mode, center, from, progress = 0, accuracy, trail, onPick, pickEnabled, recenterKey = 0, className, label }: Props) {
   const el = useRef<HTMLDivElement>(null);
   const mapRef = useRef<LMap | null>(null);
   const userRef = useRef<Marker | null>(null);
@@ -29,6 +31,7 @@ export default function MapView({ mode, center, from, progress = 0, accuracy, on
   const ambRef = useRef<Marker | null>(null);
   const routeRef = useRef<LatLng[]>([]);
   const lineRef = useRef<Polyline | null>(null);
+  const trailRef = useRef<Polyline | null>(null);
   const pickRef = useRef({ onPick, pickEnabled });
   pickRef.current = { onPick, pickEnabled };
   const progressRef = useRef(progress);
@@ -73,7 +76,7 @@ export default function MapView({ mode, center, from, progress = 0, accuracy, on
         map.fitBounds(L.latLngBounds(path), { paddingTopLeft: [40, 90], paddingBottomRight: [40, 330] });
       }
     })();
-    return () => { cancelled = true; map?.remove(); mapRef.current = null; };
+    return () => { cancelled = true; map?.remove(); mapRef.current = null; trailRef.current = null; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode]);
 
@@ -101,6 +104,24 @@ export default function MapView({ mode, center, from, progress = 0, accuracy, on
   useEffect(() => {
     if (mode === "tracking" && ambRef.current && routeRef.current.length) ambRef.current.setLatLng(pointAlong(routeRef.current, progress));
   }, [progress, mode]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (mode !== "locate" || !map) return;
+    if (!trail || trail.length < 2) {
+      trailRef.current?.remove();
+      trailRef.current = null;
+      return;
+    }
+    if (trailRef.current) trailRef.current.setLatLngs(trail);
+    else {
+      // MapView itself dynamically loads Leaflet, keep this optional as well.
+      import("leaflet").then(({ default: L }) => {
+        if (mapRef.current !== map || trailRef.current) return;
+        trailRef.current = L.polyline(trail, { color: "#237AD5", weight: 5, opacity: 0.9 }).addTo(map);
+      });
+    }
+  }, [trail, mode]);
 
   useEffect(() => {
     const map = mapRef.current;
