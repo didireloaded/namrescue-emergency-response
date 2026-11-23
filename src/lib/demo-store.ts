@@ -37,6 +37,7 @@ export interface DemoState {
   accident: AccidentDetails;
   patientCondition: string;
   forOther: boolean;
+  remoteIncident: boolean;
   recipientId: string | null;
   incidentType: EmergencyType;
   note: string;
@@ -56,6 +57,7 @@ const initial: DemoState = {
   accident: { injuredCount: "", vehicleCount: "", road: "", direction: "", danger: "", onScene: "unsure" },
   patientCondition: "",
   forOther: false,
+  remoteIncident: false,
   recipientId: null,
   incidentType: "Medical emergency",
   note: "",
@@ -87,6 +89,7 @@ export const demo = {
   setIncidentArea: (incidentArea: HomeArea) => { if (isActive(state.status)) return false; set({ incidentArea }); return true; },
   setAccidentDetails: (patch: Partial<AccidentDetails>) => set({ accident: { ...state.accident, ...patch } }),
   setPatientCondition: (patientCondition: string) => set({ patientCondition }),
+  setRemoteIncident: (remoteIncident: boolean) => set({ remoteIncident }),
   setFeedback: (rating: number, feedback: string) => {
     if (state.status !== "arrived" || !Number.isInteger(rating) || rating < 1 || rating > 5) return false;
     const safe = feedback.trim().slice(0, 500);
@@ -100,6 +103,7 @@ export const demo = {
     set({
       status: "idle",
       forOther,
+      remoteIncident: false,
       recipientId: null,
       incidentType,
       note: "",
