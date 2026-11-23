@@ -60,7 +60,7 @@ function Home() {
       <div className="relative z-10 space-y-3 px-5 pb-4 pt-6">
         <button onClick={openEmergency} className="press shadow-sos flex h-[132px] w-full items-center gap-5 rounded-[28px] border-t border-sos-bright bg-sos px-6 text-left text-on-photo">
           <span className="grid size-16 place-items-center rounded-full bg-on-photo/15"><Ambulance className="size-8" /></span>
-          <span><span className="block text-[48px] font-bold leading-none tracking-tight">{incident.status === "arrived" ? "On site" : incident.status === "received" ? "Pending" : incident.status === "assigned" ? "Track" : "SOS"}</span><span className="text-[14px] font-medium opacity-90">{incident.status === "arrived" ? "View arrival details" : incident.status === "received" ? "View request status" : incident.status === "assigned" ? "Ambulance tracking" : "Request Ambulance"}</span></span>
+          <span><span className="block text-[48px] font-bold leading-none tracking-tight">{incident.status === "arrived" ? "On site" : incident.status === "received" ? "Preview" : incident.status === "assigned" ? "Track" : "SOS"}</span><span className="text-[14px] font-medium opacity-90">{incident.status === "arrived" ? "View arrival details" : incident.status === "received" ? "Not sent to dispatch" : incident.status === "assigned" ? "Ambulance tracking demo" : "Request Ambulance"}</span></span>
         </button>
         <div className="grid grid-cols-2 gap-3">
           <button onClick={() => setCallOpen(true)} className="press flex h-[88px] flex-col justify-between rounded-[22px] border border-hairline bg-ink-2 p-4 text-left text-on-photo"><Phone className="size-5" /><span className="text-[15px] font-semibold">Call</span></button>
