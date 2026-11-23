@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   Activity, AlertTriangle, ArrowLeft, ArrowRight,
   Bell, Check, CheckCircle2, ChevronRight, ClipboardCheck,
@@ -245,6 +245,8 @@ const links: { tab: Tab; label: string; Icon: typeof Truck }[]=[
 export default function DriverApp(){
   const state=useDriver();
   const [tab,setTab]=useState<Tab>("home");
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useEffect(() => { scrollRef.current?.scrollTo({ top: 0, behavior: "instant" }); }, [tab]);
   const title={home:"Driver",dispatch:"Dispatch",vehicle:"Vehicle",activity:"Activity",account:"Profile"}[tab];
   return <div className="flex h-full flex-col bg-[#F6F8FA] text-[#162235]">
     <header className={dark+" shrink-0 px-5 pb-5 pt-safe"}>
@@ -254,7 +256,7 @@ export default function DriverApp(){
       </div>
       <div className="mt-5 flex items-center justify-between gap-2"><span className="text-[13px] text-white/75">{state.unitId}</span><span className="rounded-full bg-white/10 px-3 py-1.5 text-[12px] font-semibold text-white">{stageLabel(state.stage)}</span></div>
     </header>
-    <div className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain">
+    <div ref={scrollRef} className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain">
       <div className="space-y-4 px-5 pb-7 pt-5">
         <div className="flex items-center gap-2 rounded-xl bg-[#FFF1E5] px-3 py-2 text-[#915B18]">
           <AlertTriangle className="size-4 shrink-0"/><span className="text-[12px] font-semibold">Driver training preview. No real assignments.</span>
