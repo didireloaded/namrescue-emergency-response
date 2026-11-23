@@ -145,7 +145,7 @@ function Request() {
             </div>
           </>}
           <p className="text-[11px] leading-relaxed text-sheet-muted">Answers are optional. Do not put yourself in danger to gather information.</p>
-        </div>
+        </div>}
         <button onClick={() => { if (demo.assign()) nav({ to: "/tracking" }); }} className="press mt-4 h-14 w-full rounded-full bg-sheet-foreground font-semibold text-sheet">Simulate ambulance assignment</button>
         <button onClick={() => demo.cancel()} className="mt-2 h-12 w-full font-medium text-sos">Cancel request</button>
       </Sheet>
