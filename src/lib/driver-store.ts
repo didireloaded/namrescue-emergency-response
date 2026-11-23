@@ -15,6 +15,26 @@ export interface DriverAssignment {
   hospital: string;
   hospitalPoint: LatLng;
   note: string;
+  /** Dispatch-only guidance in a fictional training call, not a clinical record. */
+  cautionFlags: string[];
+  approachInstructions: string;
+  equipmentRequirements: string[];
+  patientRequirements: string;
+}
+export type SupplyKey = "oxygen" | "gloves" | "dressings" | "stretcher";
+export interface SupplyItem {
+  label: string;
+  count: number;
+  minimum: number;
+  expiry: string | null;
+  critical: boolean;
+}
+export interface DriverMessage {
+  id: string;
+  at: number;
+  from: "training-dispatch" | "driver";
+  text: string;
+  delivery: "local-only";
 }
 export interface DriverTripRecord {
   id: string;
@@ -30,6 +50,12 @@ export interface DriverState {
   assignment: DriverAssignment | null;
   events: { stage: DriverStage; time: number }[];
   history: DriverTripRecord[];
+  outOfServiceReason: string | null;
+  supplies: Record<SupplyKey, SupplyItem>;
+  messages: DriverMessage[];
+  handoverNote: string;
+  fatigueBreakRequested: boolean;
+  safetyCheckins: number[];
 }
 export const VEHICLE_ITEMS: readonly { id: InspectionKey; label: string; detail: string }[] = [
   { id: "tyres", label: "Tyres and wheels", detail: "Visual condition and pressure" },
@@ -50,8 +76,24 @@ export const SAMPLE_DISPATCH: DriverAssignment = {
   hospital: "Example hospital destination",
   hospitalPoint: [-22.573, 17.074],
   note: "Training scenario only. No person, patient or dispatcher is connected.",
+  cautionFlags: ["Traffic exposure near the scene", "Approach and parking guidance unverified"],
+  approachInstructions: "Demonstration only: stop safely and await instructions from the authorised control room.",
+  equipmentRequirements: ["High visibility clothing", "Stretcher access"],
+  patientRequirements: "No patient record supplied. Medical assessment belongs to the qualified crew.",
 };
 export const DRIVER_PREVIEW_BASE: LatLng = [-22.574, 17.079];
+const freshSupplies = (): DriverState["supplies"] => ({
+  oxygen: { label: "Oxygen cylinder", count: 2, minimum: 1, expiry: null, critical: true },
+  gloves: { label: "Disposable gloves (boxes)", count: 6, minimum: 2, expiry: null, critical: true },
+  dressings: { label: "Sterile dressings (packs)", count: 8, minimum: 4, expiry: null, critical: true },
+  stretcher: { label: "Patient stretcher", count: 1, minimum: 1, expiry: null, critical: true },
+});
+export const SUPPLY_KEYS: readonly SupplyKey[] = ["oxygen", "gloves", "dressings", "stretcher"];
+export function supplyIssue(item: SupplyItem, today = new Date()): string | null {
+  if (item.critical && item.count < item.minimum) return "Low stock";
+  if (item.expiry && !Number.isNaN(Date.parse(item.expiry)) && new Date(item.expiry + "T23:59:59").getTime() < today.getTime()) return "Expired";
+  return null;
+}
 const initial: DriverState = {
   stage: "offDuty",
   unitId: "CN-TRAIN-01",
@@ -60,6 +102,12 @@ const initial: DriverState = {
   assignment: null,
   events: [],
   history: [],
+  outOfServiceReason: null,
+  supplies: freshSupplies(),
+  messages: [],
+  handoverNote: "",
+  fatigueBreakRequested: false,
+  safetyCheckins: [],
 };
 let state: DriverState = initial;
 const subscribers = new Set<() => void>();
@@ -77,8 +125,11 @@ export const driver = {
     return true;
   },
   allChecksComplete: () => Object.values(state.inspection).every(Boolean),
+  supplyIssues: () => SUPPLY_KEYS.filter(key => supplyIssue(state.supplies[key]) !== null),
+  readyToWork: () => driver.allChecksComplete() && !state.outOfServiceReason &&
+    !state.fatigueBreakRequested && driver.supplyIssues().length === 0,
   startShift: () => {
-    if (state.stage !== "offDuty" || !driver.allChecksComplete()) return false;
+    if (state.stage !== "offDuty" || !driver.readyToWork()) return false;
     return nextStage("available");
   },
   endShift: () => {
@@ -87,7 +138,7 @@ export const driver = {
     return true;
   },
   simulateOffer: () => {
-    if (state.stage !== "available") return false;
+    if (state.stage !== "available" || !driver.readyToWork()) return false;
     set({ assignment: { ...SAMPLE_DISPATCH }, stage: "offered", events: [{ stage: "offered", time: Date.now() }] });
     return true;
   },
@@ -112,11 +163,43 @@ export const driver = {
     return true;
   },
   readyForNext: () => {
-    if (state.stage !== "completed") return false;
+    if (state.stage !== "completed" || !driver.readyToWork()) return false;
     set({ stage: "available", assignment: null, events: [] });
     return true;
   },
-  resetPreview: () => { emit({ ...initial, inspection: emptyInspection(), events: [], history: [] }); },
+  reportDefect: (reason: string) => {
+    const clean = reason.trim().slice(0, 280);
+    if (!clean) return false;
+    set({ outOfServiceReason: clean });
+    return true;
+  },
+  setSupplyCount: (key: SupplyKey, count: number) => {
+    if (!Number.isSafeInteger(count) || count < 0 || count > 500) return false;
+    if (state.stage !== "offDuty" && state.stage !== "available" && state.stage !== "completed") return false;
+    set({ supplies: { ...state.supplies, [key]: { ...state.supplies[key], count } } });
+    return true;
+  },
+  setFatigueBreak: (requested: boolean) => {
+    set({ fatigueBreakRequested: requested });
+    return true;
+  },
+  checkInSafe: () => {
+    if (state.stage === "offDuty") return false;
+    set({ safetyCheckins: [Date.now(), ...state.safetyCheckins].slice(0, 30) });
+    return true;
+  },
+  addMessage: (message: string) => {
+    const content = message.trim().slice(0, 400);
+    if (!content || state.stage === "offDuty") return false;
+    set({ messages: [{ id: String(Date.now()) + "-" + state.messages.length, at: Date.now(), from: "driver", text: content, delivery: "local-only" }, ...state.messages].slice(0, 60) });
+    return true;
+  },
+  updateHandover: (note: string) => {
+    if (note.length > 2000) return false;
+    set({ handoverNote: note });
+    return true;
+  },
+  resetPreview: () => { emit({ ...initial, inspection: emptyInspection(), supplies: freshSupplies(), events: [], history: [], messages: [], safetyCheckins: [] }); },
 };
 export function useDriver(): DriverState {
   return useSyncExternalStore(
