@@ -10,7 +10,7 @@ import {
 import { LazyMap } from "@/components/nr/LazyMap";
 import { DriverCommunicationsScreen, DriverInventoryPanel, DriverCrewSafetyPanel, DriverHandoverPanel, DriverClinicalBoundary, DriverNetworkBanner } from "./DriverOperations";
 import {
-  driver, useDriver, stageLabel,
+  driver, useDriver, stageLabel, dateOverdue,
   VEHICLE_ITEMS, DRIVER_PREVIEW_BASE, type DriverAssignment, type DriverStage,
 } from "@/lib/driver-store";
 
@@ -238,7 +238,7 @@ function VehicleScreen() {
     {checksLocked && <p className={secondaryText}>Vehicle checks are locked while a response is active. In a live system, defects and out-of-service status would be reported to fleet control.</p>}
     {state.outOfServiceReason && <p className="rounded-2xl bg-[#FFF0F1] p-3 text-[13px] font-semibold text-[#A52F3A]">Out of service: {state.outOfServiceReason}</p>}
     {driver.supplyIssues().length > 0 && <p className="rounded-2xl bg-[#FFF0E5] p-3 text-[13px] font-semibold text-[#96521B]">Stock inspection required: {driver.supplyIssues().length} critical items</p>}
-    {state.maintenanceDue && new Date(state.maintenanceDue+"T23:59:59").getTime() < Date.now() && <p className="rounded-2xl bg-[#FFF0F1] p-3 text-[13px] font-semibold text-[#A52F3A]">Vehicle maintenance date is overdue. New training assignments blocked.</p>}
+    {dateOverdue(state.maintenanceDue) && <p className="rounded-2xl bg-[#FFF0F1] p-3 text-[13px] font-semibold text-[#A52F3A]">Vehicle maintenance date is overdue. New training assignments blocked.</p>}
     {state.stage==="offDuty" && <Btn disabled={!driver.readyToWork()} label="Start my shift" Icon={Power} onClick={()=>driver.startShift()}/>}
     </>}
     {view === "equipment" && <DriverInventoryPanel/>}
