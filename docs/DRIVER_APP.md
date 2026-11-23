@@ -1,5 +1,7 @@
 # CareNear Driver — mobile UI preview
 
+> Driver UI update: The second iteration adds Comms, vehicle stock/expiry/maintenance checks, dispatch cautions, crew safety and local status history. See [Driver V2 operations](DRIVER_FEATURES_V2.md). These remain training-only previews.
+
 ## Scope
 
 This is an isolated, mobile-first **driver interface** inside the existing CareNear project at `/driver`. It is a coherent visual prototype with interactive local state, NOT a live emergency service or a verified driver account.

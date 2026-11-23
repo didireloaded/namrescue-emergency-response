@@ -8,12 +8,13 @@ import {
   X,
 } from "lucide-react";
 import { LazyMap } from "@/components/nr/LazyMap";
+import { DriverCommunicationsScreen, DriverInventoryPanel, DriverCrewSafetyPanel, DriverHandoverPanel, DriverClinicalBoundary, DriverNetworkBanner } from "./DriverOperations";
 import {
-  driver, useDriver, stageLabel,
+  driver, useDriver, stageLabel, dateOverdue,
   VEHICLE_ITEMS, DRIVER_PREVIEW_BASE, type DriverAssignment, type DriverStage,
 } from "@/lib/driver-store";
 
-type Tab = "home" | "dispatch" | "vehicle" | "activity" | "account";
+type Tab = "home" | "dispatch" | "comms" | "vehicle" | "activity" | "safety" | "account";
 const dark = "bg-[#152235] text-white";
 const primary = "flex min-h-14 w-full items-center justify-center gap-2 rounded-[18px] bg-[#162235] px-4 text-[15px] font-semibold text-white active:scale-[.99]";
 const lightButton = "flex min-h-13 w-full items-center justify-center gap-2 rounded-[18px] border border-[#DDE5EE] bg-white px-4 text-[14px] font-semibold text-[#20334A]";
@@ -48,6 +49,7 @@ function InlineStatus({ label, stage }: { label: string; stage: DriverStage }) {
 function RouteMap({ destination, assignment }: { destination: "incident" | "hospital"; assignment: DriverAssignment }) {
   const target = destination === "incident" ? assignment.locationPoint : assignment.hospitalPoint;
   const title = destination === "incident" ? "Example incident location" : "Example hospital destination";
+  const panoramaUrl = "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=" + encodeURIComponent(target[0] + "," + target[1]);
   const mapsUrl = "https://www.google.com/maps/dir/?api=1&destination=" +
     encodeURIComponent(target[0] + "," + target[1]) + "&travelmode=driving";
   return <>
@@ -58,7 +60,11 @@ function RouteMap({ destination, assignment }: { destination: "incident" | "hosp
     </div>
     <a target="_blank" rel="noopener noreferrer" href={mapsUrl}
       className={lightButton}><Navigation className="size-5" /> Open destination in Maps <ExternalLink className="size-4" /></a>
-    <p className={secondaryText}>Navigation opens an external map using example coordinates. Current ambulance position, routing and ETA are not connected. Pull over safely before interacting with the app.</p>
+    <div className="grid grid-cols-2 gap-2">
+      <a target="_blank" rel="noopener noreferrer" href={panoramaUrl} className={lightButton+" text-center text-[12px]"}>Look up Street View <ExternalLink className="size-4" /></a>
+      <div className="flex min-h-13 items-center justify-center rounded-[18px] bg-[#EDF1F5] px-3 text-center text-[12px] text-[#6C7B8C]">Other units' ETAs unavailable</div>
+    </div>
+    <p className={secondaryText}>Ordinary route illustration only. Ambulance dimensions, legal exemptions, road restrictions and current road name are not validated. Navigation may be unavailable in remote areas. Pull over safely before interacting.</p>
   </>;
 }
 function AssignmentSummary({ assignment }: { assignment: DriverAssignment }) {
@@ -71,6 +77,18 @@ function AssignmentSummary({ assignment }: { assignment: DriverAssignment }) {
       </div>
       <p className="mt-3 flex items-start gap-2 text-[14px] font-medium text-[#34485D]"><MapPin className="mt-0.5 size-4 shrink-0 text-[#D52E3C]" />{assignment.location}</p>
       <p className="mt-2 flex items-start gap-2 text-[13px] text-[#748197]"><Hospital className="mt-0.5 size-4 shrink-0" />{assignment.hospital}</p>
+      <div className="mt-4 space-y-3 rounded-2xl bg-[#F3F6F9] p-3">
+        <div><p className="text-[11px] font-bold uppercase tracking-wider text-[#718095]">Patient requirements · training only</p>
+          <p className="mt-1 text-[13px] text-[#2E435B]">{assignment.patientRequirements}</p></div>
+        <div><p className="text-[11px] font-bold uppercase tracking-wider text-[#718095]">Approach instructions</p>
+          <p className="mt-1 text-[13px] text-[#2E435B]">{assignment.approachInstructions}</p></div>
+        <div><p className="text-[11px] font-bold uppercase tracking-wider text-[#718095]">Equipment needed</p>
+          <p className="mt-1 text-[13px] text-[#2E435B]">{assignment.equipmentRequirements.join(" · ")}</p></div>
+      </div>
+      <div className="mt-3 rounded-2xl bg-[#FFF1E7] p-3">
+        <p className="flex items-center gap-2 text-[12px] font-bold text-[#995C21]"><AlertTriangle className="size-4"/> Pre-arrival cautions</p>
+        <ul className="mt-2 space-y-1">{assignment.cautionFlags.map(flag=><li key={flag} className="text-[13px] leading-relaxed text-[#87582F]">• {flag}</li>)}</ul>
+      </div>
     </div>
     <div className="border-t border-[#EBEFF3] bg-[#F8FAFC] px-4 py-3 text-[12px] text-[#69788D]">
       Incident {assignment.id} · Simulated only
@@ -89,14 +107,14 @@ function StepAction({ stage, onShowDispatch }: { stage: DriverStage; onShowDispa
   </div>;
   if (stage === "offered") return <div className="grid grid-cols-2 gap-3">
     <Btn label="Decline" variant="quiet" Icon={X} onClick={() => { driver.decline(); onShowDispatch(); }} />
-    <Btn label="Accept request" variant="red" Icon={Check} onClick={() => { driver.accept(); onShowDispatch(); }} />
+    <Btn label="Accept request" disabled={!driver.readyToWork()} variant="red" Icon={Check} onClick={() => { if(driver.accept())onShowDispatch(); }} />
   </div>;
-  if (stage === "accepted") return <Btn label="Start route to scene" Icon={Navigation} onClick={() => driver.depart()} />;
+  if (stage === "accepted") return <Btn label="Start route to scene" disabled={Boolean(driver.get().outOfServiceReason)} Icon={Navigation} onClick={() => driver.depart()} />;
   if (stage === "enRoute") return <Btn label="Mark arrival at scene" Icon={MapPin} onClick={() => driver.sceneArrival()} />;
-  if (stage === "atScene") return <Btn label="Crew ready · begin transport" Icon={Truck} onClick={() => driver.beginTransport()} />;
+  if (stage === "atScene") return <Btn label="Crew ready · begin transport" disabled={Boolean(driver.get().outOfServiceReason)} Icon={Truck} onClick={() => driver.beginTransport()} />;
   if (stage === "transporting") return <Btn label="Arrived at hospital" Icon={Hospital} onClick={() => driver.hospitalArrival()} />;
   if (stage === "atHospital") return <Btn label="Complete logistics handover" Icon={ClipboardCheck} onClick={() => driver.closeTrip()} />;
-  if (stage === "completed") return <Btn label="Ready for next assignment" Icon={CheckCircle2} onClick={() => driver.readyForNext()} />;
+  if (stage === "completed") return <Btn label="Ready for next assignment" disabled={!driver.readyToWork()} Icon={CheckCircle2} onClick={() => driver.readyForNext()} />;
   return null;
 }
 function HomeScreen({ to }: { to: (tab: Tab) => void }) {
@@ -120,7 +138,10 @@ function HomeScreen({ to }: { to: (tab: Tab) => void }) {
           <ClipboardCheck className="size-5"/> Complete vehicle checks
         </button>
       </div>
-      {inspected === VEHICLE_ITEMS.length && <Btn label="Start my shift" Icon={Power} onClick={() => driver.startShift()} />}
+      {inspected === VEHICLE_ITEMS.length && <Btn disabled={!driver.readyToWork()} label="Start my shift" Icon={Power} onClick={() => driver.startShift()} />}
+      {state.outOfServiceReason && <p className="rounded-2xl bg-[#FFF0F1] p-3 text-[13px] font-semibold text-[#9F2938]">Out of service. {state.outOfServiceReason}</p>}
+      {driver.supplyIssues().length > 0 && <p className="rounded-2xl bg-[#FFF0E6] p-3 text-[13px] font-semibold text-[#8F5822]">Critical equipment issues must be resolved before starting a shift.</p>}
+      {state.fatigueBreakRequested && <p className="rounded-2xl bg-[#FFF0E6] p-3 text-[13px] font-semibold text-[#8F5822]">Rest requested. Clear the training rest flag in Crew safety when fit for duty.</p>}
     </> : <>
       <div className={surface + " p-5"}>
         <div className="flex items-center justify-between gap-3"><span className="text-[12px] font-semibold tracking-wider text-[#73859C]">ASSIGNED VEHICLE</span><Truck className="size-5 text-[#41617D]" /></div>
@@ -133,14 +154,17 @@ function HomeScreen({ to }: { to: (tab: Tab) => void }) {
         <span className="flex-1"><span className="block text-[16px] font-bold">{stageLabel(state.stage)}</span><span className="mt-1 block text-[13px] text-white/65">{state.assignment.category} · {state.assignment.id}</span></span>
         <ChevronRight className="size-5"/>
       </button>}
-      {state.stage === "available" && <StepAction stage={state.stage} onShowDispatch={() => to("dispatch")} />}
+      {state.stage === "available" && !driver.readyToWork() && <div className="rounded-2xl bg-[#FFF0E9] p-4 text-[13px] font-semibold text-[#99531A]">Not ready for dispatch. Resolve vehicle stock, defect or rest flags before loading a sample call.</div>}
+      {state.stage === "available" && driver.readyToWork() && <StepAction stage={state.stage} onShowDispatch={() => to("dispatch")} />}
       {state.stage === "completed" && <StepAction stage={state.stage} onShowDispatch={() => to("home")} />}
       {state.stage === "available" && <button onClick={() => driver.endShift()} className="min-h-12 w-full text-[14px] font-semibold text-[#7A8698]">End shift</button>}
     </>}
     <SmallHeading label="Quick access"/>
     <div className="grid grid-cols-2 gap-3">
-      <button onClick={()=>to("vehicle")} className={surface + " min-h-28 p-4 text-left"}><Wrench className="size-6 text-[#2B5675]"/><span className="mt-4 block text-[15px] font-semibold">Vehicle</span><span className="mt-1 block text-[12px] text-[#77869A]">Inspection & unit</span></button>
+      <button onClick={()=>to("vehicle") } className={surface + " min-h-28 p-4 text-left"}><Wrench className="size-6 text-[#2B5675]"/><span className="mt-4 block text-[15px] font-semibold">Vehicle</span><span className="mt-1 block text-[12px] text-[#77869A]">Inspection & unit</span></button>
+      <button onClick={()=>to("comms")} className={surface + " min-h-28 p-4 text-left"}><Radio className="size-6 text-[#2B5675]"/><span className="mt-4 block text-[15px] font-semibold">Comms</span><span className="mt-1 block text-[12px] text-[#77869A]">Local message log</span></button>
       <button onClick={()=>to("activity")} className={surface + " min-h-28 p-4 text-left"}><Activity className="size-6 text-[#2B5675]"/><span className="mt-4 block text-[15px] font-semibold">Activity</span><span className="mt-1 block text-[12px] text-[#77869A]">Recent trips</span></button>
+      <button onClick={()=>to("safety")} className={surface + " min-h-28 p-4 text-left"}><ShieldCheck className="size-6 text-[#2B5675]"/><span className="mt-4 block text-[15px] font-semibold">Crew safety</span><span className="mt-1 block text-[12px] text-[#77869A]">Check-ins & rest</span></button>
     </div>
   </div>;
 }
@@ -189,10 +213,16 @@ function DispatchScreen() {
 }
 function VehicleScreen() {
   const state=useDriver();
+  const [view,setView]=useState<"checks"|"equipment">("checks");
   const completed=VEHICLE_ITEMS.filter(x=>state.inspection[x.id]).length;
   const checksLocked=stageActive(state.stage);
   return <div className="space-y-4">
     <div><p className="text-[12px] font-bold tracking-widest text-[#7A8797]">VEHICLE READINESS</p><h2 className="mt-1 text-[29px] font-bold">Your ambulance</h2><p className={secondaryText}>{state.unitId} · Example fleet assignment</p></div>
+    <div className="grid grid-cols-2 rounded-2xl bg-[#E8EDF3] p-1">
+      <button onClick={()=>setView("checks")} className={"min-h-11 rounded-xl text-[13px] font-semibold "+(view==="checks"?"bg-white text-[#19334B]":"text-[#738095]")}>Inspection</button>
+      <button onClick={()=>setView("equipment")} className={"min-h-11 rounded-xl text-[13px] font-semibold "+(view==="equipment"?"bg-white text-[#19334B]":"text-[#738095]")}>Equipment & defects</button>
+    </div>
+    {view === "checks" && <>
     <div className="rounded-[22px] bg-[#162235] p-5 text-white">
       <div className="flex justify-between"><Truck className="size-7"/><span className="text-[14px] font-semibold">{completed}/{VEHICLE_ITEMS.length} checks</span></div>
       <div className="mt-5 h-2 overflow-hidden rounded-full bg-white/15"><div className="h-full rounded-full bg-[#74CCAC]" style={{width:(completed/VEHICLE_ITEMS.length*100)+"%"}}/></div>
@@ -206,7 +236,12 @@ function VehicleScreen() {
       </label>)}
     </div>
     {checksLocked && <p className={secondaryText}>Vehicle checks are locked while a response is active. In a live system, defects and out-of-service status would be reported to fleet control.</p>}
-    {state.stage==="offDuty" && <Btn disabled={completed!==VEHICLE_ITEMS.length} label="Start my shift" Icon={Power} onClick={()=>driver.startShift()}/>}
+    {state.outOfServiceReason && <p className="rounded-2xl bg-[#FFF0F1] p-3 text-[13px] font-semibold text-[#A52F3A]">Out of service: {state.outOfServiceReason}</p>}
+    {driver.supplyIssues().length > 0 && <p className="rounded-2xl bg-[#FFF0E5] p-3 text-[13px] font-semibold text-[#96521B]">Stock inspection required: {driver.supplyIssues().length} critical items</p>}
+    {dateOverdue(state.maintenanceDue) && <p className="rounded-2xl bg-[#FFF0F1] p-3 text-[13px] font-semibold text-[#A52F3A]">Vehicle maintenance date is overdue. New training assignments blocked.</p>}
+    {state.stage==="offDuty" && <Btn disabled={!driver.readyToWork()} label="Start my shift" Icon={Power} onClick={()=>driver.startShift()}/>}
+    </>}
+    {view === "equipment" && <DriverInventoryPanel/>}
   </div>;
 }
 function ActivityScreen(){
@@ -221,17 +256,22 @@ function ActivityScreen(){
     <SmallHeading label="Recent trips"/>
     {state.history.length ? state.history.map((entry,i)=><div key={entry.id+"-"+i} className={surface+" flex gap-3 p-4"}>
       <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#EAF6EF] text-[#20855D]"><CheckCircle2 className="size-5"/></span>
-      <div className="min-w-0 flex-1"><p className="font-semibold">{entry.id}</p><p className={secondaryText}>{entry.area}</p><p className="mt-2 text-[12px] text-[#8A97A7]">{new Date(entry.completedAt).toLocaleString()}</p></div>
+      <div className="min-w-0 flex-1"><p className="font-semibold">{entry.id}</p><p className={secondaryText}>{entry.area}</p><p className="mt-2 text-[12px] text-[#8A97A7]">{new Date(entry.completedAt).toLocaleString()}</p>
+      <details className="mt-2"><summary className="cursor-pointer text-[12px] font-semibold text-[#376588]">View status timestamps</summary>
+      <ol className="mt-2 space-y-1">{entry.timeline.map((event,n)=><li key={n} className="text-[12px] text-[#6D7C90]">{stageLabel(event.stage)} · {new Date(event.time).toLocaleTimeString()}</li>)}</ol></details></div>
     </div>) : <div className={surface+" p-6 text-center"}><Clock3 className="mx-auto size-9 text-[#A6B5C5]"/><h3 className="mt-3 text-[17px] font-bold">No trips yet</h3><p className={"mt-2 "+secondaryText}>Once a simulated transport is completed, it will appear here.</p></div>}
     <p className={secondaryText}>This is session-only training history and will disappear after a page refresh.</p>
+    <DriverHandoverPanel />
+    <DriverClinicalBoundary />
   </div>;
 }
-function AccountScreen(){
+function AccountScreen({to}:{to:(tab:Tab)=>void}){
   const state=useDriver();
   return <div className="space-y-5">
     <h2 className="text-[29px] font-bold">Driver profile</h2>
     <div className={surface+" flex items-center gap-4 p-5"}><span className="grid size-18 place-items-center rounded-full bg-[#E3ECF3] text-[#375672]"><UserRound className="size-9"/></span><div><p className="text-[20px] font-bold">Training driver</p><p className={secondaryText}>No verified driver account linked</p></div></div>
     <div className={surface+" space-y-3 p-5"}><SmallHeading label="Assignment"/><p className="text-[16px] font-semibold">{state.unitId}</p><p className={secondaryText}>{state.serviceArea}</p><div className="border-t border-[#EBF0F4] pt-4"><p className="font-semibold">Verification pending</p><p className={"mt-1 "+secondaryText}>A real driver account will require provider-issued credentials, vehicle assignment and role-based authorisation.</p></div></div>
+    <button onClick={()=>to("safety")} className={lightButton}><ShieldCheck className="size-5"/> Crew safety and fatigue</button>
     <Link to="/" className={lightButton}><ArrowLeft className="size-5"/> Back to citizen experience</Link>
     <Btn label="Reset driver preview" Icon={Power} variant="quiet" onClick={()=>{if(window.confirm("Clear the training session and all local trip history?"))driver.resetPreview();}}/>
   </div>;
@@ -239,6 +279,7 @@ function AccountScreen(){
 const links: { tab: Tab; label: string; Icon: typeof Truck }[]=[
   {tab:"home",label:"Home",Icon:Truck},
   {tab:"dispatch",label:"Dispatch",Icon:Radio},
+  {tab:"comms",label:"Comms",Icon:Bell},
   {tab:"vehicle",label:"Vehicle",Icon:Wrench},
   {tab:"activity",label:"Activity",Icon:Activity},
 ];
@@ -247,7 +288,7 @@ export default function DriverApp(){
   const [tab,setTab]=useState<Tab>("home");
   const scrollRef = useRef<HTMLDivElement>(null);
   useEffect(() => { scrollRef.current?.scrollTo({ top: 0, behavior: "instant" }); }, [tab]);
-  const title={home:"Driver",dispatch:"Dispatch",vehicle:"Vehicle",activity:"Activity",account:"Profile"}[tab];
+  const title={home:"Driver",dispatch:"Dispatch",comms:"Comms",vehicle:"Vehicle",activity:"Activity",safety:"Crew safety",account:"Profile"}[tab];
   return <div className="flex h-full flex-col bg-[#F6F8FA] text-[#162235]">
     <header className={dark+" shrink-0 px-5 pb-5 pt-safe"}>
       <div className="mt-3 flex items-center justify-between">
@@ -261,15 +302,29 @@ export default function DriverApp(){
         <div className="flex items-center gap-2 rounded-xl bg-[#FFF1E5] px-3 py-2 text-[#915B18]">
           <AlertTriangle className="size-4 shrink-0"/><span className="text-[12px] font-semibold">Driver training preview. No real assignments.</span>
         </div>
+        {(tab==="home" || tab==="dispatch") && <DriverNetworkBanner/>}
+        {state.stage==="offered" && tab!=="dispatch" && <div role="status" className="rounded-[22px] border border-[#F0C3C8] bg-[#FFF0F1] p-4">
+          <div className="flex items-start gap-3"><Siren className="mt-0.5 size-6 shrink-0 text-[#B62C3C]"/>
+            <div className="flex-1"><p className="text-[16px] font-bold text-[#9C2634]">Sample dispatch available</p>
+            <p className="mt-1 text-[13px] text-[#81515A]">{state.assignment?.category} · {state.assignment?.id}. Not sent by a real control room.</p></div>
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <button onClick={()=>driver.decline()} className="min-h-12 rounded-xl border border-[#E5B3BA] text-[13px] font-bold text-[#9C2634]">Decline</button>
+            <button disabled={Boolean(state.outOfServiceReason||state.fatigueBreakRequested)} onClick={()=>{if(driver.accept())setTab("dispatch");}} className="min-h-12 rounded-xl bg-[#C52C3D] text-[13px] font-bold text-white disabled:opacity-40">Accept in one tap</button>
+          </div>
+          <button onClick={()=>setTab("dispatch")} className="mt-2 min-h-11 w-full text-[13px] font-semibold text-[#654959]">Review full incident details</button>
+        </div>}
         {tab==="home"&&<HomeScreen to={setTab}/>}
         {tab==="dispatch"&&<DispatchScreen/>}
+        {tab==="comms"&&<DriverCommunicationsScreen/>}
         {tab==="vehicle"&&<VehicleScreen/>}
         {tab==="activity"&&<ActivityScreen/>}
-        {tab==="account"&&<AccountScreen/>}
+        {tab==="safety"&&<div className="space-y-4"><h2 className="text-[29px] font-bold">Crew safety</h2><DriverCrewSafetyPanel /></div>}
+        {tab==="account"&&<AccountScreen to={setTab}/>}
       </div>
     </div>
     <nav aria-label="Driver navigation" className="shrink-0 border-t border-[#DFE5EC] bg-white pb-safe">
-      <ul className="grid grid-cols-4">{links.map(({tab:item,label,Icon})=><li key={item}>
+      <ul className="grid grid-cols-5">{links.map(({tab:item,label,Icon})=><li key={item}>
         <button onClick={()=>setTab(item)} aria-current={tab===item?"page":undefined} className={"flex min-h-[62px] w-full flex-col items-center justify-center gap-1 text-[12px] font-semibold "+(tab===item?"text-[#C9293A]":"text-[#6E7F93]")}><Icon className="size-5"/>{label}</button>
       </li>)}</ul>
     </nav>
