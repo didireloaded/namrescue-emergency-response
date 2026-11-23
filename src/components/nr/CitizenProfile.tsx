@@ -9,8 +9,10 @@ import {
 import { BottomNav } from "@/components/nr/chrome";
 import { citizen, useCitizen, type Contact, type Dependant } from "@/lib/citizen-store";
 import { demo, useDemo } from "@/lib/demo-store";
+import { AreaSelector } from "./AreaSelector";
+import { areaLabel } from "@/lib/regions";
 
-type Panel = "overview" | "onboarding" | "edit" | "medical" | "family" | "contacts" | "guidance" | "privacy" | "notifications" | "help";
+type Panel = "overview" | "onboarding" | "edit" | "medical" | "family" | "contacts" | "guidance" | "privacy" | "notifications" | "help" | "area" | "coverage";
 const field = "h-12 w-full rounded-2xl border border-[#DDE2E8] bg-white px-4 text-[15px] text-[#172232] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10";
 const secondary = "flex min-h-12 w-full items-center justify-center rounded-2xl border border-[#DDE2E8] bg-white px-4 text-[15px] font-semibold";
 const primary = "flex min-h-13 w-full items-center justify-center gap-2 rounded-2xl bg-[#162235] px-5 py-3 text-[15px] font-semibold text-white active:scale-[.99]";
@@ -63,7 +65,7 @@ export default function Profile() {
   const [contactDraft, setContactDraft] = useState<Omit<Contact, "id">>({ name: "", phone: "", relationship: "" });
   const [dependantDraft, setDependantDraft] = useState<Omit<Dependant, "id">>({ name: "", relationship: "", dateOfBirth: "", medicalNotes: "" });
   const avatarInput = useRef<HTMLInputElement>(null);
-  const { profile, medical, contacts, dependants, preferences } = state;
+  const { profile, medical, medicalAid, homeArea, contacts, dependants, preferences } = state;
   const open = (name: Panel) => { setPanel(name); setShowWelcome(false); };
   const editingOnboarding = panel === "onboarding" || (panel === "overview" && !profile.completedOnboarding && showWelcome);
   const upload = (file?: File) => {
@@ -95,11 +97,11 @@ export default function Profile() {
         <div className="relative bg-[#162235] px-6 pb-7 pt-safe text-white">
           <div className="mt-4 flex items-center justify-between">
             <button onClick={() => { setShowWelcome(false); setPanel("overview"); }} className="flex min-h-11 items-center gap-1 text-[13px] text-white/80"><ArrowLeft className="size-4" /> Later</button>
-            <span className="text-[12px] font-semibold tracking-wide text-white/60">STEP {step + 1} OF 4</span>
+            <span className="text-[12px] font-semibold tracking-wide text-white/60">STEP {step + 1} OF 5</span>
           </div>
-          <div className="mt-5 flex gap-1.5">{[0,1,2,3].map((n) => <span key={n} className={"h-1 flex-1 rounded-full " + (n <= step ? "bg-[#FF4551]" : "bg-white/20")} />)}</div>
-          <h1 className="mt-7 text-[31px] font-bold leading-tight">{["Let's get to know you", "Make it yours", "Your Medical ID", "Someone to contact"][step]}</h1>
-          <p className="mt-2 text-[14px] leading-relaxed text-white/70">{["A few basics. You can still request help without setting up a profile.", "Add a photo so the profile feels personal.", "Share only what you feel comfortable sharing.", "Choose someone responders can contact when needed."][step]}</p>
+          <div className="mt-5 flex gap-1.5">{[0,1,2,3,4].map((n) => <span key={n} className={"h-1 flex-1 rounded-full " + (n <= step ? "bg-[#FF4551]" : "bg-white/20")} />)}</div>
+          <h1 className="mt-7 text-[31px] font-bold leading-tight">{["Let's get to know you", "Where do you live?", "Make it yours", "Your Medical ID", "Someone to contact"][step]}</h1>
+          <p className="mt-2 text-[14px] leading-relaxed text-white/70">{["A few basics. You can still request help without setting up a profile.", "Your home area makes local contacts easier to find. Emergencies use the actual incident location.", "Add a photo so the profile feels personal.", "Share only what you feel comfortable sharing.", "Choose someone responders can contact when needed."][step]}</p>
         </div>
         <div className="space-y-4 px-6 py-6">
           {step === 0 && <>
@@ -108,19 +110,20 @@ export default function Profile() {
             <Field label="Email (optional)" value={profile.email} onChange={(email) => citizen.updateProfile({ email })} type="email" placeholder="you@example.com" />
             <Field label="Date of birth (optional)" value={profile.dateOfBirth} onChange={(dateOfBirth) => citizen.updateProfile({ dateOfBirth })} type="date" />
           </>}
-          {step === 1 && <div className="flex flex-col items-center gap-4 py-6">
+          {step === 1 && <AreaSelector value={homeArea} onChange={(area) => citizen.updateHomeArea(area)} />}
+          {step === 2 && <div className="flex flex-col items-center gap-4 py-6">
             <Avatar image={profile.avatar} name={profile.name} large />
             <button className={secondary} onClick={() => avatarInput.current?.click()}><Camera className="mr-2 size-5" /> Choose photo</button>
             <p className={subtitle}>Optional. JPG, PNG or WebP, up to 2 MB.</p>
           </div>}
-          {step === 2 && <MedicalForm />}
-          {step === 3 && <>
+          {step === 3 && <MedicalForm />}
+          {step === 4 && <>
             <ContactForm value={contactDraft} set={setContactDraft} />
             <button onClick={addContact} disabled={!contactDraft.name.trim() || !contactDraft.phone.trim()} className={secondary}><Plus className="mr-2 size-4" /> Add contact</button>
             {contacts.map((c) => <p key={c.id} className="rounded-xl bg-white px-4 py-3 text-[14px]">{c.name} · {c.relationship || "Contact"}</p>)}
           </>}
           <Note>Medical information and photos currently remain in this browser session only. Secure accounts and encrypted storage must be connected before public use.</Note>
-          <button onClick={() => step < 3 ? setStep(step + 1) : complete()} className={primary}>{step === 3 ? "Finish profile" : "Continue"} <ArrowRight className="size-5" /></button>
+          <button onClick={() => step < 4 ? setStep(step + 1) : complete()} className={primary}>{step === 4 ? "Finish profile" : "Continue"} <ArrowRight className="size-5" /></button>
           {step > 0 && <button onClick={() => setStep(step - 1)} className={secondary}>Back</button>}
           <button onClick={() => { setShowWelcome(false); setPanel("overview"); }} className="flex min-h-11 w-full items-center justify-center text-[13px] font-semibold text-[#66748A]">Skip for now</button>
         </div>
@@ -135,6 +138,7 @@ export default function Profile() {
             <div className="min-w-0 flex-1">
               <h1 className="truncate text-[24px] font-bold">{profile.name || "Your profile"}</h1>
               <p className="mt-1 truncate text-[13px] text-white/65">{profile.phone || "Add your personal details"}</p>
+              <p className="mt-1 truncate text-[12px] text-white/65">{areaLabel(homeArea)}</p>
               <button onClick={() => open("edit")} className="mt-3 flex min-h-9 items-center gap-1.5 text-[13px] font-semibold text-white/95"><Pencil className="size-4" /> Edit profile</button>
             </div>
           </div>
@@ -154,6 +158,8 @@ export default function Profile() {
           </section>
           <section><p className="mb-2 px-1 text-[12px] font-semibold uppercase tracking-[.12em] text-[#8792A2]">Your services</p>
             <div className="rounded-[22px] bg-white px-4">
+              <Row icon={MapPin} label="Home area" detail={areaLabel(homeArea)} onClick={() => open("area")} />
+              <Row icon={Shield} label="Medical aid" detail={medicalAid.provider || "Optional cover details"} onClick={() => open("coverage")} />
               <Row icon={Clock3} label="My requests" detail={incident.status === "idle" ? "Request history" : "An emergency request is active"} onClick={() => open("notifications")} />
               <Row icon={BookOpen} label="Emergency guidance" detail="First aid resources" onClick={() => open("guidance")} />
               <Row icon={Bell} label="Notifications" onClick={() => open("notifications")} />
@@ -170,7 +176,7 @@ export default function Profile() {
       </> : <>
         <header className="sticky top-0 z-10 border-b border-[#E9EDF2] bg-[#F7F9FC] px-5 pb-4 pt-safe">
           <button onClick={() => setPanel("overview")} className="mt-2 flex min-h-10 items-center gap-1 text-[14px] font-semibold text-[#1B66C9]"><ArrowLeft className="size-5" /> Profile</button>
-          <h1 className="mt-4 text-[29px] font-bold tracking-tight">{({ edit:"Edit profile", medical:"Medical ID", family:"Family & dependants", contacts:"Emergency contacts", guidance:"Emergency guidance", privacy:"Privacy & permissions", notifications:"My requests & alerts", help:"Help & support", overview:"Profile", onboarding:"Onboarding" } as Record<Panel, string>)[panel]}</h1>
+          <h1 className="mt-4 text-[29px] font-bold tracking-tight">{({ edit:"Edit profile", medical:"Medical ID", family:"Family & dependants", contacts:"Emergency contacts", guidance:"Emergency guidance", privacy:"Privacy & permissions", notifications:"My requests & alerts", help:"Help & support", area:"My home area", coverage:"Medical aid", overview:"Profile", onboarding:"Onboarding" } as Record<Panel, string>)[panel]}</h1>
         </header>
         <main className="space-y-5 px-5 pb-8 pt-5">
           {panel === "edit" && <>
@@ -181,6 +187,19 @@ export default function Profile() {
             <Field label="Date of birth" value={profile.dateOfBirth} onChange={(dateOfBirth) => citizen.updateProfile({ dateOfBirth })} type="date" />
             <Note>Changes are not securely saved between sessions until account storage is connected.</Note>
             <button className={primary} onClick={() => setPanel("overview")}><Check className="size-4" /> Done</button>
+          </>}
+          {panel === "area" && <>
+            <AreaSelector value={homeArea} onChange={(area) => citizen.updateHomeArea(area)} heading="Home region and town" help="Used for local contacts. Every emergency still asks for the incident location." />
+            <button className={primary} onClick={() => setPanel("overview")}>Done</button>
+          </>}
+          {panel === "coverage" && <>
+            <p className={subtitle}>Optional. A government emergency request must never depend on medical aid membership.</p>
+            <Field label="Medical aid provider" value={medicalAid.provider} onChange={(provider) => citizen.updateMedicalAid({ provider })} placeholder="Provider or PSEMAS" />
+            <Field label="Scheme / plan" value={medicalAid.scheme} onChange={(scheme) => citizen.updateMedicalAid({ scheme })} />
+            <Field label="Membership number" value={medicalAid.membershipNumber} onChange={(membershipNumber) => citizen.updateMedicalAid({ membershipNumber })} />
+            <Field label="Main member" value={medicalAid.mainMemberName} onChange={(mainMemberName) => citizen.updateMedicalAid({ mainMemberName })} />
+            <Note>Coverage details are kept in this session only and are not checked or transmitted.</Note>
+            <button className={primary} onClick={() => setPanel("overview")}>Done</button>
           </>}
           {panel === "medical" && <>
             <div className="flex items-center gap-3 rounded-[22px] bg-[#E6EDF5] p-4"><HeartPulse className="size-7 text-[#CC2633]" /><div><h2 className="font-bold">Your emergency medical ID</h2><p className={subtitle}>Only share with authorised responders.</p></div></div>
@@ -232,7 +251,7 @@ export default function Profile() {
             <Note>Live push notifications, dispatch messages, and family tracking need a secure server and approved messaging integration.</Note>
           </>}
           {panel === "help" && <>
-            <div className="rounded-[22px] bg-white p-5"><Phone className="mb-4 size-7 text-[#CC2633]" /><h2 className="text-[20px] font-bold">Emergency calling</h2><p className="mt-2 text-[14px] leading-relaxed text-[#647084]">Telephone access remains essential. Verified Namibia emergency numbers must be configured before the app can open your phone dialer.</p></div>
+            <div className="rounded-[22px] bg-white p-5"><Phone className="mb-4 size-7 text-[#CC2633]" /><h2 className="text-[20px] font-bold">Emergency calling</h2><p className="mt-2 text-[14px] leading-relaxed text-[#647084]">The Call option on Home lists published nationwide numbers and selected local services. Tapping a number opens your phone's dialer. This directory is incomplete and provider coverage must be verified.</p></div>
             <div className="rounded-[22px] bg-white p-5"><Shield className="mb-4 size-6" /><h2 className="text-[17px] font-bold">Service connection</h2><p className={subtitle}>This interface is not yet linked to a government ambulance dispatch centre. Use existing emergency telephone services for real emergencies.</p></div>
           </>}
         </main>

@@ -1,10 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ChevronRight, LocateFixed, Users } from "lucide-react";
+import { ChevronRight, LocateFixed, Users, Phone, ShieldCheck } from "lucide-react";
 import { BackButton } from "@/components/nr/chrome";
 import { LazyMap } from "@/components/nr/LazyMap";
 import { demo, useDemo } from "@/lib/demo-store";
 import { etaMinutes, tripProgress } from "@/lib/demo-sim";
+import { IMG } from "@/lib/images";
+import { EmergencyCallSheet } from "@/components/nr/EmergencyCallSheet";
 
 export const Route = createFileRoute("/tracking")({
   head: () => ({ meta: [
@@ -22,6 +24,7 @@ function Tracking() {
   const nav = useNavigate();
   const [now, setNow] = useState(() => 0);
   const [rk, setRk] = useState(0);
+  const [callOpen, setCallOpen] = useState(false);
   useEffect(() => { setNow(Date.now()); const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, []);
   const p = tripProgress(s.assignedAt, now || (s.assignedAt ?? 0));
   const from: [number, number] = [s.location.pos[0] - 0.018, s.location.pos[1] + 0.024];
@@ -40,13 +43,19 @@ function Tracking() {
           <span className="rounded-full border border-caution/50 px-2.5 py-1 text-[11px] font-semibold text-caution">Demo</span>
         </div>
         <p className="mt-3 text-[64px] font-bold leading-none tracking-tight tabular text-on-photo">{etaMinutes(p)} min</p>
-        <p className="mt-1 text-[13px] text-on-photo-muted">Estimated arrival · simulated</p>
+        <p className="mt-1 text-[13px] text-on-photo-muted">Estimated arrival · simulation, not live GPS</p>
         <div className="mt-4 h-1 rounded-full bg-ink-3"><div className="h-1 rounded-full bg-sos transition-[width] duration-1000" style={{ width: `${Math.max(4, p * 100)}%` }} /></div>
-        <div className="mt-5 grid grid-cols-[1fr_auto] gap-3 pb-3">
-          <Link to="/team" className="press flex min-h-12 items-center gap-2 rounded-full bg-ink-2 px-4 text-[14px] font-semibold text-on-photo"><Users className="size-4" />Response team<ChevronRight className="ml-auto size-4" /></Link>
+        <Link to="/team" className="mt-4 flex min-h-[66px] items-center gap-3 rounded-[20px] border border-hairline bg-ink-2 p-2.5 text-on-photo">
+          <img src={IMG.driver} alt="Example responder portrait" className="size-12 rounded-[14px] object-cover" />
+          <span className="min-w-0 flex-1"><span className="block text-[14px] font-semibold">Response team</span><span className="block text-[12px] text-on-photo-muted">Sample photo · Demo Unit 07</span><span className="mt-0.5 flex items-center gap-1 text-[11px] text-on-photo-muted"><ShieldCheck className="size-3.5" /> Crew identity and registration unverified</span></span>
+          <ChevronRight className="size-4" />
+        </Link>
+        <div className="mt-3 grid grid-cols-[1fr_auto] gap-2 pb-3">
+          <button onClick={() => setCallOpen(true)} className="press flex min-h-12 items-center justify-center gap-2 rounded-full bg-ink-2 px-4 text-[13px] font-semibold text-on-photo"><Phone className="size-4" />Emergency calls</button>
           <button onClick={() => { demo.arrive(); nav({ to: "/arrived" }); }} className="press min-h-12 rounded-full bg-on-photo px-4 text-[14px] font-semibold text-ink">Simulate arrival</button>
         </div>
       </section>
+      <EmergencyCallSheet open={callOpen} onClose={() => setCallOpen(false)} initialArea={s.incidentArea} />
     </div>
   );
 }

@@ -11,7 +11,7 @@ Statuses: **UI** means interactive app experience; **Preview** means simulated s
 4. Manual location pin — UI
 5. Emergency type selector — UI
 6. Optional incident description — UI
-7. Emergency dialer — Backend, verified number required
+7. Emergency dialer — UI, source-backed local/national contacts open native phone dialer; verify directory continuously
 8. No-account emergency access — UI
 9. Request acknowledgement — Preview
 10. Duplicate submission protection — UI
@@ -48,7 +48,7 @@ Statuses: **UI** means interactive app experience; **Preview** means simulated s
 33. Interactive map — UI (Leaflet)
 34. Find current location — UI
 35. Search Namibia places — UI (development geocoding)
-36. Roadside accident detail — Partial, location pin and note currently
+36. Roadside accident detail — UI, scene presence, vehicles, injuries, direction and hazard notes
 37. Measured location accuracy — UI
 38. User-initiated location share — UI
 39. Weak/offline service handling — Partial, errors shown; reliable delivery pending
@@ -58,7 +58,7 @@ Statuses: **UI** means interactive app experience; **Preview** means simulated s
 41. En route updates — Preview
 42. ETA change alerts — Backend
 43. Dispatch messages — Backend
-44. Call saved emergency contact — UI, native dialer with saved contact
+44. Call saved emergency contact — UI, native dialer with saved contact; local emergency service contacts use separate region-filtered directory
 45. Network and service health — Partial
 
 ## Emergency guidance
@@ -76,8 +76,8 @@ Statuses: **UI** means interactive app experience; **Preview** means simulated s
 55. Language preferences — UI picker, translations pending
 56. Accessibility — Partial, touch targets, reduced motion and semantics; full audit pending
 57. Privacy controls — UI, server-side enforcement pending
-58. Profile management — UI with onboarding, optional avatar, medical history
-59. Post-response feedback — Backend
+58. Profile management — UI with onboarding, optional avatar, home region/town, medical history and medical aid details
+59. Post-response feedback — UI after explicit response completion, session-only rating/comments; authenticated service submission remains backend-dependent
 60. Support — UI, connection status explained
 
 ## Security and operational constraints
@@ -98,3 +98,12 @@ Development services use public OpenStreetMap/Nominatim and OSRM access. A suppo
 - Production map services, billing, monitoring and audit logs
 
 Never remove service-not-connected safety messaging until these integrations are real and tested.
+
+## Regional response update
+- Home town is stored separately from the incident map pin and area.
+- National fallback numbers remain visible. Published town-specific contacts never bleed into neighbouring towns or an entire region by default.
+- Help Someone Else includes remote incidents, optional unknown-person details, and road accidents.
+- Optional medical questions appear after the initial incident confirmation; they do not delay help requests.
+- A GPS-first dispatch contract is available for later authorised backend integration, but the current app does not send requests.
+- Leaflet remains the map, with Mapbox migration deferred.
+- See docs/REGIONAL_RESPONSE.md for the source register and deployment limitations.

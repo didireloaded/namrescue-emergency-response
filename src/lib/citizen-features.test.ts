@@ -5,6 +5,7 @@ import { citizen } from "./citizen-store";
 beforeEach(() => {
   if (demo.get().status === "received") demo.cancel();
   if (demo.get().status === "assigned") demo.arrive();
+  if (demo.get().status === "arrived") demo.complete();
   demo.start(false);
   demo.setLocation({ pos: WINDHOEK, label: "Windhoek map preview", source: "default" });
   citizen.clear();
@@ -40,6 +41,8 @@ describe("emergency request guards", () => {
     expect(demo.assign()).toBe(true);
     expect(demo.assign()).toBe(false);
     expect(demo.arrive()).toBe(true);
+    expect(demo.get().history.length).toBe(0);
+    expect(demo.complete()).toBe(true);
     expect(demo.get().history.length).toBeGreaterThan(0);
   });
   it("prevents incident location mutation after receipt", () => {

@@ -1,3 +1,4 @@
+import { EMPTY_AREA, type HomeArea } from "./regions";
 import { useSyncExternalStore } from "react";
 
 /**
@@ -33,6 +34,12 @@ export interface MedicalRecord {
   medication: string;
   notes: string;
 }
+export interface MedicalAid {
+  provider: string;
+  membershipNumber: string;
+  scheme: string;
+  mainMemberName: string;
+}
 export interface Preferences {
   language: "English" | "Oshiwambo" | "Afrikaans" | "Otjiherero" | "Khoekhoegowab";
   locationOnRequest: boolean;
@@ -43,6 +50,8 @@ export interface Preferences {
 export interface CitizenState {
   profile: CitizenProfile;
   medical: MedicalRecord;
+  medicalAid: MedicalAid;
+  homeArea: HomeArea;
   contacts: Contact[];
   dependants: Dependant[];
   preferences: Preferences;
@@ -50,6 +59,8 @@ export interface CitizenState {
 const empty: CitizenState = {
   profile: { name: "", phone: "", email: "", avatar: null, dateOfBirth: "", completedOnboarding: false },
   medical: { bloodType: "", allergies: "", conditions: "", medication: "", notes: "" },
+  medicalAid: { provider: "", membershipNumber: "", scheme: "", mainMemberName: "" },
+  homeArea: { ...EMPTY_AREA },
   contacts: [],
   dependants: [],
   preferences: {
@@ -71,6 +82,8 @@ export const citizen = {
   get: () => snapshot,
   updateProfile: (patch: Partial<CitizenProfile>) => emit({ ...snapshot, profile: { ...snapshot.profile, ...patch } }),
   updateMedical: (patch: Partial<MedicalRecord>) => emit({ ...snapshot, medical: { ...snapshot.medical, ...patch } }),
+  updateMedicalAid: (patch: Partial<MedicalAid>) => emit({ ...snapshot, medicalAid: { ...snapshot.medicalAid, ...patch } }),
+  updateHomeArea: (patch: Partial<HomeArea>) => emit({ ...snapshot, homeArea: { ...snapshot.homeArea, ...patch } }),
   updatePreferences: (patch: Partial<Preferences>) => emit({ ...snapshot, preferences: { ...snapshot.preferences, ...patch } }),
   addContact: (contact: Omit<Contact, "id">) =>
     emit({ ...snapshot, contacts: [...snapshot.contacts, { id: makeId(), ...contact }] }),
@@ -81,6 +94,8 @@ export const citizen = {
   clear: () => emit({
     profile: { ...empty.profile },
     medical: { ...empty.medical },
+    medicalAid: { ...empty.medicalAid },
+    homeArea: { ...empty.homeArea },
     contacts: [],
     dependants: [],
     preferences: { ...empty.preferences },
