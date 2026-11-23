@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { driver, useDriver, stageLabel, VEHICLE_ITEMS, SAMPLE_DISPATCH } from "./driver-store";
+import { driver, stageLabel, VEHICLE_ITEMS, SAMPLE_DISPATCH, supplyIssue, dateOverdue } from "./driver-store";
 
 beforeEach(() => driver.resetPreview());
 
@@ -66,4 +66,73 @@ describe("CareNear driver shift and readiness", () => {
     expect(stageLabel("offered")).toBe("New dispatch");
     expect(driver.get().history).toHaveLength(0);
   });
+  it("prevents starting a shift with a safety defect", () => {
+    for (const item of VEHICLE_ITEMS) driver.checklist(item.id,true);
+    expect(driver.reportDefect("Brakes require inspection")).toBe(true);
+    expect(driver.startShift()).toBe(false);
+    expect(driver.get().outOfServiceReason).toContain("Brakes");
+  });
+  it("takes an available vehicle off duty when a defect is raised", () => {
+    ready();
+    expect(driver.reportDefect("Vehicle lights not functioning")).toBe(true);
+    expect(driver.get().stage).toBe("offDuty");
+    expect(driver.simulateOffer()).toBe(false);
+  });
+  it("blocks new assignments when a critical supply is low or expired", () => {
+    ready();
+    expect(driver.setSupplyCount("oxygen",0)).toBe(true);
+    expect(driver.simulateOffer()).toBe(false);
+    expect(driver.supplyIssues()).toContain("oxygen");
+    expect(driver.setSupplyCount("oxygen",2)).toBe(true);
+    expect(driver.setSupplyExpiry("dressings","2020-01-01")).toBe(true);
+    expect(driver.supplyIssues()).toContain("dressings");
+    expect(driver.simulateOffer()).toBe(false);
+    expect(supplyIssue(driver.get().supplies.dressings)).toBe("Expired");
+  });
+  it("blocks shift start when the service date is overdue", () => {
+    for (const item of VEHICLE_ITEMS) driver.checklist(item.id,true);
+    expect(driver.setMaintenanceDue("2020-01-01")).toBe(true);
+    expect(dateOverdue("2020-01-01")).toBe(true);
+    expect(driver.startShift()).toBe(false);
+  });
+  it("makes rest and crew flags local-only without changing a current call", () => {
+    ready();
+    expect(driver.setFatigueBreak(true)).toBe(true);
+    expect(driver.simulateOffer()).toBe(false);
+    expect(driver.setFatigueBreak(false)).toBe(true);
+    driver.simulateOffer();
+    driver.accept();
+    driver.setFatigueBreak(true);
+    expect(driver.get().stage).toBe("accepted");
+    expect(driver.checkInSafe()).toBe(true);
+    expect(driver.get().safetyCheckins).toHaveLength(1);
+  });
+  it("records quick messages locally without pretending to send to a control room", () => {
+    expect(driver.addMessage("On scene")).toBe(false);
+    ready();
+    expect(driver.addMessage("At scene")).toBe(true);
+    expect(driver.get().messages[0]?.delivery).toBe("local-only");
+    expect(driver.get().messages[0]?.from).toBe("driver");
+    expect(driver.addMessage("   ")).toBe(false);
+  });
+  it("preserves a full local status history inside completed trip records", () => {
+    ready();
+    driver.simulateOffer();
+    driver.accept();
+    driver.depart();
+    driver.sceneArrival();
+    driver.beginTransport();
+    driver.hospitalArrival();
+    driver.closeTrip();
+    const timeline=driver.get().history[0]?.timeline;
+    expect(timeline?.map(event=>event.stage)).toEqual([
+      "offered","accepted","enRoute","atScene","transporting","atHospital","completed"
+    ]);
+  });
+  it("accepts handover notes without medical record data synchronization", () => {
+    expect(driver.updateHandover("Fuel refilled.")).toBe(true);
+    expect(driver.get().handoverNote).toBe("Fuel refilled.");
+    expect(driver.updateHandover("x".repeat(2100))).toBe(false);
+  });
+
 });
