@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from "react";
 import type { LatLng } from "./demo-sim";
+import { EMPTY_AREA, type HomeArea } from "./regions";
 
 /** No emergency request is transmitted by this store. It models the UI flow only. */
 export type RequestStatus = "idle" | "received" | "assigned" | "arrived";
@@ -12,16 +13,29 @@ export interface DemoLocation {
   accuracy?: number;
   observedAt?: number;
 }
+export interface AccidentDetails {
+  injuredCount: string;
+  vehicleCount: string;
+  road: string;
+  direction: string;
+  danger: string;
+  onScene: "yes" | "no" | "unsure";
+}
 export interface HistoryEntry {
   id: string;
   at: number;
   label: string;
   forOther: boolean;
   type?: EmergencyType;
+  rating?: number;
+  feedback?: string;
 }
 export interface DemoState {
   status: RequestStatus;
   location: DemoLocation;
+  incidentArea: HomeArea;
+  accident: AccidentDetails;
+  patientCondition: string;
   forOther: boolean;
   recipientId: string | null;
   incidentType: EmergencyType;
@@ -31,11 +45,16 @@ export interface DemoState {
   assignedAt: number | null;
   arrivedAt: number | null;
   history: HistoryEntry[];
+  rating: number;
+  feedback: string;
 }
 export const WINDHOEK: LatLng = [-22.5609, 17.0658];
 const initial: DemoState = {
   status: "idle",
   location: { pos: WINDHOEK, label: "Windhoek, Namibia", source: "default" },
+  incidentArea: { ...EMPTY_AREA },
+  accident: { injuredCount: "", vehicleCount: "", road: "", direction: "", danger: "", onScene: "unsure" },
+  patientCondition: "",
   forOther: false,
   recipientId: null,
   incidentType: "Medical emergency",
@@ -45,6 +64,8 @@ const initial: DemoState = {
   assignedAt: null,
   arrivedAt: null,
   history: [],
+  rating: 0,
+  feedback: "",
 };
 let state: DemoState = initial;
 const listeners = new Set<() => void>();
@@ -62,17 +83,31 @@ export const canSubmit = (status: RequestStatus, source: LocationSource) =>
  */
 export const demo = {
   get: () => state,
-  setLocation: (location: DemoLocation) => { if (isActive(state.status)) return false; set({ location }); return true; },
+  setLocation: (location: DemoLocation) => { if (isActive(state.status)) return false; set({ location, incidentArea: { ...EMPTY_AREA } }); return true; },
+  setIncidentArea: (incidentArea: HomeArea) => { if (isActive(state.status)) return false; set({ incidentArea }); return true; },
+  setAccidentDetails: (patch: Partial<AccidentDetails>) => set({ accident: { ...state.accident, ...patch } }),
+  setPatientCondition: (patientCondition: string) => set({ patientCondition }),
+  setFeedback: (rating: number, feedback: string) => {
+    if (state.status !== "arrived" || !Number.isInteger(rating) || rating < 1 || rating > 5) return false;
+    const safe = feedback.trim().slice(0, 500);
+    set({ rating, feedback: safe, history: state.history.map(entry => entry.id === state.reference ? { ...entry, rating, feedback: safe } : entry) });
+    return true;
+  },
   setDetails: (patch: Partial<Pick<DemoState, "incidentType" | "note" | "recipientId" | "forOther">>) =>
     set(patch),
-  start: (forOther = false) => {
+  start: (forOther = false, incidentType: EmergencyType = "Medical emergency") => {
     if (isActive(state.status)) return false;
     set({
       status: "idle",
       forOther,
       recipientId: null,
-      incidentType: "Medical emergency",
+      incidentType,
       note: "",
+      incidentArea: { ...EMPTY_AREA },
+      accident: { injuredCount: "", vehicleCount: "", road: "", direction: "", danger: "", onScene: "unsure" },
+      patientCondition: "",
+      rating: 0,
+      feedback: "",
       reference: null,
       requestedAt: null,
       assignedAt: null,
@@ -81,7 +116,7 @@ export const demo = {
     return true;
   },
   confirm: () => {
-    if (!canSubmit(state.status, state.location.source)) return false;
+    if (state.status !== "idle" || !canSubmit(state.status, state.location.source)) return false;
     const at = Date.now();
     set({ status: "received", reference: "NR-" + at.toString(36).toUpperCase(), requestedAt: at });
     return true;
