@@ -58,7 +58,7 @@ Statuses: **UI** means interactive app experience; **Preview** means simulated s
 41. En route updates — Preview
 42. ETA change alerts — Backend
 43. Dispatch messages — Backend
-44. Call saved emergency contact — Partial, contact list present
+44. Call saved emergency contact — UI, native dialer with saved contact
 45. Network and service health — Partial
 
 ## Emergency guidance
