@@ -107,3 +107,15 @@ Never remove service-not-connected safety messaging until these integrations are
 - A GPS-first dispatch contract is available for later authorised backend integration, but the current app does not send requests.
 - Leaflet remains the map, with Mapbox migration deferred.
 - See docs/REGIONAL_RESPONSE.md for the source register and deployment limitations.
+
+## Panic-state usability updates (2026-11-23)
+
+- First-launch onboarding no longer blocks the Home SOS action. Profile setup remains optional.
+- Location permission is user-initiated with a visible explanation; users can select a map pin instead.
+- Browser offline detection makes the emergency calling directory available, but it is only a network hint, not proof of dispatch availability.
+- Unsent preview requests explicitly say they were not received by a dispatcher. Preview assignment and tracking remain simulated.
+- Request cancellation now requires an explicit destructive confirmation.
+- Bottom sheet focus trapping, large-text preference, visible keyboard focus, high contrast, and map reduced-motion support were improved.
+- Hold-to-SOS and silent emergency alerts are deferred pending accessibility research and authorised backend service protocols. Current SOS remains a tap to location verification followed by a separate confirmation.
+
+See [Panic-state UX](PANIC_STATE_UX.md) for design decisions and remaining production safety work.
