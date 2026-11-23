@@ -138,7 +138,9 @@ function HomeScreen({ to }: { to: (tab: Tab) => void }) {
           <ClipboardCheck className="size-5"/> Complete vehicle checks
         </button>
       </div>
-      {inspected === VEHICLE_ITEMS.length && <Btn label="Start my shift" Icon={Power} onClick={() => driver.startShift()} />}
+      {inspected === VEHICLE_ITEMS.length && <Btn disabled={!driver.readyToWork()} label="Start my shift" Icon={Power} onClick={() => driver.startShift()} />}
+      {state.outOfServiceReason && <p className="rounded-2xl bg-[#FFF0F1] p-3 text-[13px] font-semibold text-[#9F2938]">Out of service. {state.outOfServiceReason}</p>}
+      {driver.supplyIssues().length > 0 && <p className="rounded-2xl bg-[#FFF0E6] p-3 text-[13px] font-semibold text-[#8F5822]">Critical equipment issues must be resolved before starting a shift.</p>}
     </> : <>
       <div className={surface + " p-5"}>
         <div className="flex items-center justify-between gap-3"><span className="text-[12px] font-semibold tracking-wider text-[#73859C]">ASSIGNED VEHICLE</span><Truck className="size-5 text-[#41617D]" /></div>
@@ -252,7 +254,9 @@ function ActivityScreen(){
     <SmallHeading label="Recent trips"/>
     {state.history.length ? state.history.map((entry,i)=><div key={entry.id+"-"+i} className={surface+" flex gap-3 p-4"}>
       <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#EAF6EF] text-[#20855D]"><CheckCircle2 className="size-5"/></span>
-      <div className="min-w-0 flex-1"><p className="font-semibold">{entry.id}</p><p className={secondaryText}>{entry.area}</p><p className="mt-2 text-[12px] text-[#8A97A7]">{new Date(entry.completedAt).toLocaleString()}</p></div>
+      <div className="min-w-0 flex-1"><p className="font-semibold">{entry.id}</p><p className={secondaryText}>{entry.area}</p><p className="mt-2 text-[12px] text-[#8A97A7]">{new Date(entry.completedAt).toLocaleString()}</p>
+      <details className="mt-2"><summary className="cursor-pointer text-[12px] font-semibold text-[#376588]">View status timestamps</summary>
+      <ol className="mt-2 space-y-1">{entry.timeline.map((event,n)=><li key={n} className="text-[12px] text-[#6D7C90]">{stageLabel(event.stage)} · {new Date(event.time).toLocaleTimeString()}</li>)}</ol></details></div>
     </div>) : <div className={surface+" p-6 text-center"}><Clock3 className="mx-auto size-9 text-[#A6B5C5]"/><h3 className="mt-3 text-[17px] font-bold">No trips yet</h3><p className={"mt-2 "+secondaryText}>Once a simulated transport is completed, it will appear here.</p></div>}
     <p className={secondaryText}>This is session-only training history and will disappear after a page refresh.</p>
     <DriverHandoverPanel />
@@ -296,6 +300,17 @@ export default function DriverApp(){
         <div className="flex items-center gap-2 rounded-xl bg-[#FFF1E5] px-3 py-2 text-[#915B18]">
           <AlertTriangle className="size-4 shrink-0"/><span className="text-[12px] font-semibold">Driver training preview. No real assignments.</span>
         </div>
+        {state.stage==="offered" && tab!=="dispatch" && <div role="status" className="rounded-[22px] border border-[#F0C3C8] bg-[#FFF0F1] p-4">
+          <div className="flex items-start gap-3"><Siren className="mt-0.5 size-6 shrink-0 text-[#B62C3C]"/>
+            <div className="flex-1"><p className="text-[16px] font-bold text-[#9C2634]">Sample dispatch available</p>
+            <p className="mt-1 text-[13px] text-[#81515A]">{state.assignment?.category} · {state.assignment?.id}. Not sent by a real control room.</p></div>
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <button onClick={()=>driver.decline()} className="min-h-12 rounded-xl border border-[#E5B3BA] text-[13px] font-bold text-[#9C2634]">Decline</button>
+            <button onClick={()=>{if(driver.accept())setTab("dispatch");}} className="min-h-12 rounded-xl bg-[#C52C3D] text-[13px] font-bold text-white">Accept in one tap</button>
+          </div>
+          <button onClick={()=>setTab("dispatch")} className="mt-2 min-h-11 w-full text-[13px] font-semibold text-[#654959]">Review full incident details</button>
+        </div>}
         {tab==="home"&&<HomeScreen to={setTab}/>}
         {tab==="dispatch"&&<DispatchScreen/>}
         {tab==="comms"&&<DriverCommunicationsScreen/>}
