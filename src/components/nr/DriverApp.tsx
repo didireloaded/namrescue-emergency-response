@@ -1,15 +1,15 @@
 import { Link } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
 import {
-  Activity, AlertTriangle, ArrowLeft, ArrowRight, BadgeCheck,
+  Activity, AlertTriangle, ArrowLeft, ArrowRight,
   Bell, Check, CheckCircle2, ChevronRight, ClipboardCheck,
   Clock3, ExternalLink, Hospital, MapPin, Navigation, Power,
-  Radio, Route, ShieldCheck, Siren, Truck, UserRound, Wrench,
+  Radio, ShieldCheck, Siren, Truck, UserRound, Wrench,
   X,
 } from "lucide-react";
 import { LazyMap } from "@/components/nr/LazyMap";
 import {
-  driver, useDriver, stageLabel, SAMPLE_DISPATCH,
+  driver, useDriver, stageLabel,
   VEHICLE_ITEMS, DRIVER_PREVIEW_BASE, type DriverAssignment, type DriverStage,
 } from "@/lib/driver-store";
 
@@ -104,7 +104,7 @@ function HomeScreen({ to }: { to: (tab: Tab) => void }) {
   const inspected = VEHICLE_ITEMS.filter(x => state.inspection[x.id]).length;
   return <div className="space-y-5">
     <div className="flex items-center justify-between">
-      <div className="min-w-0"><p className="text-[12px] text-[#7D8B9A]">MONDAY · SHIFT OVERVIEW</p>
+      <div className="min-w-0"><p className="text-[12px] text-[#7D8B9A]">SHIFT OVERVIEW</p>
         <h2 className="mt-1 text-[26px] font-bold tracking-tight">Driver workspace</h2></div>
       <InlineStatus stage={state.stage} label={stageLabel(state.stage)} />
     </div>
@@ -190,7 +190,7 @@ function DispatchScreen() {
 function VehicleScreen() {
   const state=useDriver();
   const completed=VEHICLE_ITEMS.filter(x=>state.inspection[x.id]).length;
-  const readonly=stageActive(state.stage);
+  const checksLocked=stageActive(state.stage);
   return <div className="space-y-4">
     <div><p className="text-[12px] font-bold tracking-widest text-[#7A8797]">VEHICLE READINESS</p><h2 className="mt-1 text-[29px] font-bold">Your ambulance</h2><p className={secondaryText}>{state.unitId} · Example fleet assignment</p></div>
     <div className="rounded-[22px] bg-[#162235] p-5 text-white">
@@ -202,10 +202,10 @@ function VehicleScreen() {
       {VEHICLE_ITEMS.map(item=><label key={item.id} className="flex min-h-[80px] items-center gap-3 py-3">
         <span className={"grid size-11 shrink-0 place-items-center rounded-2xl "+(state.inspection[item.id]?"bg-[#E4F5EB] text-[#208257]":"bg-[#F1F4F7] text-[#667A91]")}>{state.inspection[item.id]?<Check className="size-5"/>:<Wrench className="size-5"/>}</span>
         <span className="min-w-0 flex-1"><span className="block text-[14px] font-semibold">{item.label}</span><span className="block text-[12px] text-[#78879A]">{item.detail}</span></span>
-        <input aria-label={item.label} type="checkbox" className="size-5 accent-[#217A59]" disabled={readonly} checked={state.inspection[item.id]} onChange={e=>driver.checklist(item.id,e.target.checked)}/>
+        <input aria-label={item.label} type="checkbox" className="size-5 accent-[#217A59]" disabled={checksLocked} checked={state.inspection[item.id]} onChange={e=>driver.checklist(item.id,e.target.checked)}/>
       </label>)}
     </div>
-    {readonly && <p className={secondaryText}>Vehicle checks are locked while a response is active. In a live system, defects and out-of-service status would be reported to fleet control.</p>}
+    {checksLocked && <p className={secondaryText}>Vehicle checks are locked while a response is active. In a live system, defects and out-of-service status would be reported to fleet control.</p>}
     {state.stage==="offDuty" && <Btn disabled={completed!==VEHICLE_ITEMS.length} label="Start my shift" Icon={Power} onClick={()=>driver.startShift()}/>}
   </div>;
 }
@@ -245,8 +245,7 @@ const links: { tab: Tab; label: string; Icon: typeof Truck }[]=[
 export default function DriverApp(){
   const state=useDriver();
   const [tab,setTab]=useState<Tab>("home");
-  const [intro,setIntro]=useState(false);
-  const title={home:"Driver",dispatch:"Dispatch",vehicle:"Vehicle",activity:"Activity",account:"Profile"}[tab];
+    const title={home:"Driver",dispatch:"Dispatch",vehicle:"Vehicle",activity:"Activity",account:"Profile"}[tab];
   return <div className="flex h-full flex-col bg-[#F6F8FA] text-[#162235]">
     <header className={dark+" shrink-0 px-5 pb-5 pt-safe"}>
       <div className="mt-3 flex items-center justify-between">
