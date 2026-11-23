@@ -107,14 +107,14 @@ function StepAction({ stage, onShowDispatch }: { stage: DriverStage; onShowDispa
   </div>;
   if (stage === "offered") return <div className="grid grid-cols-2 gap-3">
     <Btn label="Decline" variant="quiet" Icon={X} onClick={() => { driver.decline(); onShowDispatch(); }} />
-    <Btn label="Accept request" variant="red" Icon={Check} onClick={() => { driver.accept(); onShowDispatch(); }} />
+    <Btn label="Accept request" disabled={!driver.readyToWork()} variant="red" Icon={Check} onClick={() => { if(driver.accept())onShowDispatch(); }} />
   </div>;
-  if (stage === "accepted") return <Btn label="Start route to scene" Icon={Navigation} onClick={() => driver.depart()} />;
+  if (stage === "accepted") return <Btn label="Start route to scene" disabled={Boolean(driver.get().outOfServiceReason)} Icon={Navigation} onClick={() => driver.depart()} />;
   if (stage === "enRoute") return <Btn label="Mark arrival at scene" Icon={MapPin} onClick={() => driver.sceneArrival()} />;
-  if (stage === "atScene") return <Btn label="Crew ready · begin transport" Icon={Truck} onClick={() => driver.beginTransport()} />;
+  if (stage === "atScene") return <Btn label="Crew ready · begin transport" disabled={Boolean(driver.get().outOfServiceReason)} Icon={Truck} onClick={() => driver.beginTransport()} />;
   if (stage === "transporting") return <Btn label="Arrived at hospital" Icon={Hospital} onClick={() => driver.hospitalArrival()} />;
   if (stage === "atHospital") return <Btn label="Complete logistics handover" Icon={ClipboardCheck} onClick={() => driver.closeTrip()} />;
-  if (stage === "completed") return <Btn label="Ready for next assignment" Icon={CheckCircle2} onClick={() => driver.readyForNext()} />;
+  if (stage === "completed") return <Btn label="Ready for next assignment" disabled={!driver.readyToWork()} Icon={CheckCircle2} onClick={() => driver.readyForNext()} />;
   return null;
 }
 function HomeScreen({ to }: { to: (tab: Tab) => void }) {
