@@ -86,9 +86,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { name: "viewport-fit", content: "cover" },
       { name: "theme-color", content: "#101722" },
-      { title: "NamRescue — Emergency ambulance prototype" },
+      { title: "CareNear — Emergency ambulance prototype" },
       { name: "description", content: "Interactive demo prototype of an emergency ambulance request app for Namibia." },
-      { property: "og:title", content: "NamRescue — Emergency ambulance prototype" },
+      { property: "og:title", content: "CareNear — Emergency ambulance prototype" },
       { property: "og:description", content: "Interactive demo prototype of an emergency ambulance request app for Namibia." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -157,7 +157,7 @@ function PhoneFrame({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-dvh md:flex md:items-center md:justify-center md:gap-14 md:py-8">
       <aside className="hidden w-56 md:block" aria-label="Screen picker">
-        <p className="text-[13px] font-semibold text-on-photo">NamRescue</p>
+        <p className="text-[13px] font-semibold text-on-photo">CareNear</p>
         <p className="mb-6 text-[12px] text-muted-foreground">Interactive prototype · not a live service</p>
         <ul className="space-y-1">
           {SCREENS.map((s) => (
