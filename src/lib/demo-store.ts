@@ -85,7 +85,7 @@ function set(patch: Partial<DemoState>) {
   state = { ...state, ...patch };
   listeners.forEach((listener) => listener());
 }
-export const isActive = (status: RequestStatus) => status === "received" || status === "assigned";
+export const isActive = (status: RequestStatus) => status === "received" || status === "assigned" || status === "arrived";
 export const canSubmit = (status: RequestStatus, source: LocationSource) =>
   !isActive(status) && source !== "default";
 
@@ -149,13 +149,17 @@ export const demo = {
     set({
       status: "arrived",
       arrivedAt: at,
-      history: [{ id: state.reference ?? String(at), at, label: state.location.label, forOther: state.forOther, type: state.incidentType }, ...state.history],
     });
     return true;
   },
   complete: () => {
     if (state.status !== "arrived") return false;
-    set({ status: "completed", completedAt: Date.now() });
+    const at = Date.now();
+    set({
+      status: "completed",
+      completedAt: at,
+      history: [{ id: state.reference ?? String(at), at, label: state.location.label, forOther: state.forOther, type: state.incidentType }, ...state.history],
+    });
     return true;
   },
   cancel: () => {
