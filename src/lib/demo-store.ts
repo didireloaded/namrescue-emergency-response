@@ -52,6 +52,7 @@ export interface DemoState {
   requestedAt: number | null;
   assignedAt: number | null;
   arrivedAt: number | null;
+  completedAt: number | null;
   history: HistoryEntry[];
   rating: number;
   feedback: string;
@@ -73,6 +74,7 @@ const initial: DemoState = {
   requestedAt: null,
   assignedAt: null,
   arrivedAt: null,
+  completedAt: null,
   history: [],
   rating: 0,
   feedback: "",
@@ -126,6 +128,7 @@ export const demo = {
       requestedAt: null,
       assignedAt: null,
       arrivedAt: null,
+      completedAt: null,
     });
     return true;
   },
@@ -152,7 +155,7 @@ export const demo = {
   },
   complete: () => {
     if (state.status !== "arrived") return false;
-    set({ status: "completed" });
+    set({ status: "completed", completedAt: Date.now() });
     return true;
   },
   cancel: () => {
