@@ -5,7 +5,7 @@ import { demo, useDemo } from "@/lib/demo-store";
 
 export const Route = createFileRoute("/summary")({
   head: () => ({ meta: [
-    { title: "Your emergency request | NamRescue" },
+    { title: "Your emergency request | CareNear" },
     { name: "description", content: "Incident summary and optional service feedback." },
   ] }),
   component: Summary,

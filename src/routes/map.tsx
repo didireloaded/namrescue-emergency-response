@@ -9,7 +9,7 @@ import { searchNamibia, type Place } from "@/lib/map-service";
 
 export const Route = createFileRoute("/map")({
   head: () => ({ meta: [
-    { title: "Location Map | NamRescue" },
+    { title: "Location Map | CareNear" },
     { name: "description", content: "Find and confirm an emergency location." },
   ] }),
   component: MapScreen,
@@ -50,7 +50,7 @@ function MapScreen() {
         pickEnabled={!locked}
         onPick={(pos) => { demo.setLocation({ pos, label: "Dropped pin", source: "manual", observedAt: Date.now() }); setResults([]); }}
         className="absolute inset-0"
-        label="NamRescue interactive location map"
+        label="CareNear interactive location map"
       />
       <div className="pointer-events-none absolute inset-x-0 top-0 z-[500] h-[170px] bg-gradient-to-b from-[#142136]/80 to-transparent" />
       <div className="absolute inset-x-4 z-[600] top-[calc(var(--safe-top)+18px)]">

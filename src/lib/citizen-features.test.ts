@@ -21,7 +21,7 @@ describe("emergency request guards", () => {
     demo.setLocation({ pos: [-22.56, 17.06], label: "Pinned location", source: "manual" });
     expect(demo.confirm()).toBe(true);
     expect(demo.get().status).toBe("received");
-    expect(demo.get().reference).toMatch(/^NR-/);
+    expect(demo.get().reference).toMatch(/^CN-/);
   });
   it("prevents duplicate submissions and accidental reset", () => {
     demo.setLocation({ pos: WINDHOEK, label: "Verified pin", source: "manual" });

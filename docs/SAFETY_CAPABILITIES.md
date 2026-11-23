@@ -1,4 +1,4 @@
-# Safety capabilities for NamRescue
+# Safety capabilities for CareNear
 
 The current Lovable project is a web app. It is not a certified emergency dispatch system and must not pretend that local state or opening a message composer constitutes a successful alert.
 
@@ -8,7 +8,7 @@ The current Lovable project is a web app. It is not a certified emergency dispat
 - User starts foreground location collection only after deliberately pressing a button. Samples are kept in memory, displayed on Leaflet, capped to 100, and location tracking stops on screen hide or unmount.
 - Last-known location, estimated GPS accuracy and timestamp are shown.
 - The app refuses to compose a location message when the reading is over five minutes old.
-- Users can choose an existing trusted contact and open an SMS composition screen, or copy the message. Sending is always user-controlled, and NamRescue cannot confirm delivery.
+- Users can choose an existing trusted contact and open an SMS composition screen, or copy the message. Sending is always user-controlled, and CareNear cannot confirm delivery.
 - No medical data, location trails or contact information are uploaded by these tools.
 
 ## Native mobile capabilities and operational prerequisites

@@ -14,7 +14,7 @@ import {
 
 export const Route = createFileRoute("/safety")({
   head: () => ({ meta: [
-    { title: "Safety tools | NamRescue" },
+    { title: "Safety tools | CareNear" },
     { name: "description", content: "User-controlled location check-in and trusted contact messaging." },
   ] }),
   component: SafetyTools,
@@ -200,7 +200,7 @@ function SafetyTools() {
               <button disabled={!latestText} className={button + " border border-[#E0E6EC] bg-white text-[#2B4E73] disabled:opacity-50"} onClick={copy}>
                 <Copy className="size-4" /> Copy location message
               </button>
-              <p className={info}>Your phone opens a draft SMS. You must review and send it yourself. Sending and delivery are not verified by NamRescue.</p>
+              <p className={info}>Your phone opens a draft SMS. You must review and send it yourself. Sending and delivery are not verified by CareNear.</p>
             </> : <>
               <p className={info}>Add a trusted contact in your profile before composing a location message.</p>
               <Link to="/profile" className={button + " bg-[#162235] text-white"}>Manage emergency contacts</Link>

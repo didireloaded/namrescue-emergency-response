@@ -7,9 +7,9 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/team")({
   head: () => ({ meta: [
-    { title: "Your Response Team — NamRescue demo" },
+    { title: "Your Response Team — CareNear demo" },
     { name: "description", content: "Demo response crew and vehicle for a simulated request." },
-    { property: "og:title", content: "Your Response Team — NamRescue demo" },
+    { property: "og:title", content: "Your Response Team — CareNear demo" },
     { property: "og:description", content: "Demo response crew and vehicle for a simulated request." },
     { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" },
   ] }),
@@ -39,7 +39,7 @@ function Team() {
         </div>
         <button onClick={() => setNote(true)} className="press mt-4 flex w-full items-center gap-4 rounded-[22px] border border-sheet-line bg-on-photo p-2.5 text-left shadow-card">
           <img src={IMG.ambSide} alt="Ambulance vehicle" className="h-14 w-20 rounded-[14px] object-cover" />
-          <span className="flex-1"><span className="block text-[16px] font-bold">NR-DEMO-07</span><span className="text-[13px] text-sheet-muted">Vehicle registration not verified</span></span>
+          <span className="flex-1"><span className="block text-[16px] font-bold">CN-DEMO-07</span><span className="text-[13px] text-sheet-muted">Vehicle registration not verified</span></span>
           <ChevronRight className="size-5 text-sheet-muted" />
         </button>
         <div className="mt-4 grid grid-cols-2 gap-3">

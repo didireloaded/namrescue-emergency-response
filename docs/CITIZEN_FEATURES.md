@@ -1,4 +1,4 @@
-# NamRescue citizen app — 60 feature register
+# CareNear citizen app — 60 feature register
 
 UI direction: photographic iOS, native-feeling controls, minimal copy. Leaflet remains the map renderer. Mapping services are isolated for later Mapbox integration.
 

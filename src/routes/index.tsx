@@ -12,9 +12,9 @@ import { useConnectivity } from "@/lib/connectivity";
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: [
-    { title: "NamRescue — Get emergency medical help (demo)" },
+    { title: "CareNear — Get emergency medical help (demo)" },
     { name: "description", content: "Prototype SOS screen for requesting an ambulance in Namibia. Demo only." },
-    { property: "og:title", content: "NamRescue — Get emergency medical help (demo)" },
+    { property: "og:title", content: "CareNear — Get emergency medical help (demo)" },
     { property: "og:description", content: "Prototype SOS screen for requesting an ambulance in Namibia. Demo only." },
     { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" },
   ] }),
@@ -42,7 +42,7 @@ function Home() {
       <div className="photo-fade-bottom absolute inset-x-0 top-0 h-[62%]" />
       <header className="relative z-10 flex items-start justify-between px-[26px] pt-safe">
         <div className="mt-3">
-          <p className="text-[20px] font-bold tracking-tight text-on-photo"><span className="text-sos-bright">+</span> NamRescue</p>
+          <p className="text-[20px] font-bold tracking-tight text-on-photo"><span className="text-sos-bright">+</span> CareNear</p>
           <p className="text-[12px] text-on-photo-muted">Emergency Medical Services</p>
           <button onClick={() => setAreaOpen(true)} className="mt-4 flex min-h-10 items-center gap-1.5 rounded-full border border-white/25 bg-ink/60 px-3 text-left text-[12px] font-semibold text-white">
             <MapPin className="size-3.5 text-sos-bright" /> {areaLabel(profile.homeArea)} <ChevronDown className="size-3" />

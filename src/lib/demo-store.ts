@@ -135,7 +135,7 @@ export const demo = {
   confirm: () => {
     if (state.status !== "idle" || !canSubmit(state.status, state.location.source)) return false;
     const at = Date.now();
-    set({ status: "received", reference: "NR-" + at.toString(36).toUpperCase(), requestedAt: at });
+    set({ status: "received", reference: "CN-" + at.toString(36).toUpperCase(), requestedAt: at });
     return true;
   },
   assign: () => {

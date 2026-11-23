@@ -10,9 +10,9 @@ import { EmergencyCallSheet } from "@/components/nr/EmergencyCallSheet";
 
 export const Route = createFileRoute("/tracking")({
   head: () => ({ meta: [
-    { title: "Ambulance En Route — NamRescue demo" },
+    { title: "Ambulance En Route — CareNear demo" },
     { name: "description", content: "Simulated ambulance tracking on a Windhoek map." },
-    { property: "og:title", content: "Ambulance En Route — NamRescue demo" },
+    { property: "og:title", content: "Ambulance En Route — CareNear demo" },
     { property: "og:description", content: "Simulated ambulance tracking on a Windhoek map." },
     { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" },
   ] }),
