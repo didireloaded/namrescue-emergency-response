@@ -25,5 +25,5 @@ export function useConnectivity(): Connectivity {
 export function canCreatePreviewRequest(connected: Connectivity): boolean {
   // No auto-sending of SOS requests is ever implied. The caller should use
   // the phone dialer if the device reports no data connection.
-  return connected !== "offline";
+  return connected === "online";
 }
