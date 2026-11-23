@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import {
-  ArrowLeft, Check, Clock3, Copy, MapPin, MessageSquareText,
+  ArrowLeft, Clock3, Copy, MapPin, MessageSquareText,
   Navigation, Phone, ShieldCheck, Square, UsersRound,
 } from "lucide-react";
 import { BottomNav } from "@/components/nr/chrome";
@@ -30,7 +30,6 @@ function SafetyTools() {
   const [last, setLast] = useState<SafetyLocation | null>(null);
   const [trail, setTrail] = useState<SafetyLocation[]>([]);
   const [contactId, setContactId] = useState("");
-  const [message, setMessage] = useState("");
   const [notice, setNotice] = useState("");
   const watch = useRef<number | null>(null);
 
@@ -167,7 +166,7 @@ function SafetyTools() {
 
             {tracking === "active" ?
               <button className={button + " bg-[#E8EEF5] text-[#233953]"} onClick={stop}>
-                <Square className="size-4" /> Stop sharing preparation
+                <Square className="size-4" /> Stop location tracking
               </button> :
               <button className={button + " bg-[#162235] text-white"} onClick={start}>
                 <Navigation className="size-5" /> {tracking === "paused" ? "Restart location" : "Get my location"}
