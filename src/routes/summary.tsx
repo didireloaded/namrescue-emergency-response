@@ -27,6 +27,7 @@ function Summary() {
     ["Request created (simulation)", incident.requestedAt],
     ["Team assigned (simulation)", incident.assignedAt],
     ["Arrival (simulation)", incident.arrivedAt],
+    ["Completed (simulation)", incident.completedAt],
   ] as const;
   return <div className="flex h-full flex-col bg-[#F7F9FC] text-[#162235]">
     <main className="min-h-0 flex-1 overflow-y-auto px-5 pb-7 pt-safe">
