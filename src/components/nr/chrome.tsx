@@ -69,7 +69,7 @@ export function Sheet({ open, onClose, children, title, dark = false }: { open: 
   return (
     <div className="absolute inset-0 z-[70]" role="dialog" aria-modal="true" aria-label={title}>
       <button type="button" aria-label="Close" onClick={onClose} className="animate-fade-in absolute inset-0 bg-ink/60" />
-      <div className={cn("animate-sheet-up absolute inset-x-0 bottom-0 rounded-t-[28px] px-5 pb-safe pt-2.5 shadow-sheet", dark ? "bg-ink-2 text-on-photo" : "bg-sheet text-sheet-foreground")}>
+      <div className={cn("animate-sheet-up absolute inset-x-0 bottom-0 max-h-[92%] overflow-y-auto overscroll-contain rounded-t-[28px] px-5 pb-safe pt-2.5 shadow-sheet", dark ? "bg-ink-2 text-on-photo" : "bg-sheet text-sheet-foreground")}>
         <div className={cn("mx-auto mb-4 h-[5px] w-10 rounded-full", dark ? "bg-hairline" : "bg-sheet-line")} />
         <div className="pb-4">{children}</div>
       </div>
