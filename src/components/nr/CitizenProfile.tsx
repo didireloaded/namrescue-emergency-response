@@ -1,22 +1,14 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import {
   ArrowLeft, ArrowRight, Bell, Camera, ChevronRight, CircleHelp, Clock3,
   HeartPulse, Languages, LockKeyhole, MapPin, Phone, Plus, ShieldCheck,
   Trash2, UserRound, UsersRound, Check, BookOpen, Pencil, CircleAlert,
-  Accessibility, Shield, Ambulance,
+  Accessibility, Shield, Ambulance, type LucideIcon,
 } from "lucide-react";
 import { BottomNav } from "@/components/nr/chrome";
 import { citizen, useCitizen, type Contact, type Dependant } from "@/lib/citizen-store";
 import { demo, useDemo } from "@/lib/demo-store";
-
-export const Route = createFileRoute("/profile")({
-  head: () => ({ meta: [
-    { title: "Your Profile | NamRescue" },
-    { name: "description", content: "Manage your emergency contacts, medical ID and family information." },
-  ] }),
-  component: Profile,
-});
 
 type Panel = "overview" | "onboarding" | "edit" | "medical" | "family" | "contacts" | "guidance" | "privacy" | "notifications" | "help";
 const field = "h-12 w-full rounded-2xl border border-[#DDE2E8] bg-white px-4 text-[15px] text-[#172232] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10";
@@ -25,7 +17,7 @@ const primary = "flex min-h-13 w-full items-center justify-center gap-2 rounded-
 const subtitle = "text-[13px] leading-relaxed text-[#647084]";
 
 function Row({ icon: Icon, label, detail, onClick, red = false }: {
-  icon: typeof HeartPulse;
+  icon: LucideIcon;
   label: string;
   detail?: string;
   onClick: () => void;
@@ -62,7 +54,7 @@ const GUIDES = [
   { name: "Unconscious person", detail: "Assess the scene and request help", link: "https://www.redcross.org/take-a-class/first-aid/performing-first-aid" },
 ] as const;
 
-function Profile() {
+export default function Profile() {
   const state = useCitizen();
   const incident = useDemo();
   const [panel, setPanel] = useState<Panel>("overview");
@@ -271,7 +263,7 @@ function ContactForm({ value, set }: { value: Omit<Contact,"id">; set: (value: O
   </div>;
 }
 function PreferenceRow({ title, desc, checked, onChange, icon: Icon }: {
-  title: string; desc: string; checked: boolean; onChange: (value: boolean) => void; icon: typeof HeartPulse;
+  title: string; desc: string; checked: boolean; onChange: (value: boolean) => void; icon: LucideIcon;
 }) {
   return <label className="flex min-h-20 items-center gap-3 rounded-2xl bg-white px-4 py-3">
     <Icon className="size-5 shrink-0 text-[#42546D]" />
