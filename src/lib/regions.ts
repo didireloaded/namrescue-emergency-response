@@ -68,10 +68,13 @@ export const EMERGENCY_CONTACTS: readonly EmergencyContact[] = [
   { id: "national-mva", name: "MVA Fund crash response", category: "Road accident", number: "081 9682", scope: "national", source: METHEALTH },
 ];
 export function contactsFor(area: HomeArea): EmergencyContact[] {
-  const matches = EMERGENCY_CONTACTS.filter(c => c.scope !== "national" && (
-    (area.town && c.towns?.some(t => t.toLowerCase() === area.town.toLowerCase())) ||
-    (area.region && c.regions?.includes(area.region))
-  ));
+  const matches = EMERGENCY_CONTACTS.filter(c => {
+    if (c.scope === "national") return false;
+    // A town-scoped listing must never leak into neighbouring towns merely
+    // because the user selected the same administrative region.
+    if (c.towns?.length) return Boolean(area.town && c.towns.some(t => t.toLowerCase() === area.town.trim().toLowerCase()));
+    return c.scope === "regional" && Boolean(area.region && c.regions?.includes(area.region));
+  });
   return [...matches, ...EMERGENCY_CONTACTS.filter(c => c.scope === "national")];
 }
 export function dialUri(number: string) {
