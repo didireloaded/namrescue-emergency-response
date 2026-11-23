@@ -7,6 +7,7 @@ import { IMG } from "@/lib/images";
 import { demo, useDemo, type EmergencyType } from "@/lib/demo-store";
 import { useCitizen } from "@/lib/citizen-store";
 import { useGeolocate } from "@/lib/use-geolocate";
+import { searchNamibia, type Place } from "@/lib/map-service";
 
 export const Route = createFileRoute("/request")({
   head: () => ({ meta: [
@@ -27,10 +28,10 @@ function Request() {
   const [details, setDetails] = useState(false);
   const [pick, setPick] = useState(false);
   const [q, setQ] = useState("");
-  const [results, setResults] = useState<{ display_name: string; lat: string; lon: string }[]>([]);
+  const [results, setResults] = useState<Place[]>([]);
   useEffect(() => { if (citizen.preferences.locationOnRequest) geo.locate(); }, [geo.locate, citizen.preferences.locationOnRequest]);
   const search = async () => {
-    try { const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&countrycodes=na&limit=5&q=${encodeURIComponent(q)}`); setResults(await r.json()); } catch { setResults([]); }
+    try { setResults(await searchNamibia(q)); } catch { setResults([]); }
   };
   const failed = geo.state === "denied" || geo.state === "unavailable";
   return (
