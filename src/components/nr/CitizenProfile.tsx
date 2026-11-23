@@ -1,10 +1,10 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import {
   ArrowLeft, ArrowRight, Bell, Camera, ChevronRight, CircleHelp, Clock3,
   HeartPulse, Languages, LockKeyhole, MapPin, Phone, Plus, ShieldCheck,
   Trash2, UserRound, UsersRound, Check, BookOpen, Pencil, CircleAlert,
-  Accessibility, Shield, Ambulance, type LucideIcon,
+  Accessibility, Shield, Ambulance, ShieldAlert, type LucideIcon,
 } from "lucide-react";
 import { BottomNav } from "@/components/nr/chrome";
 import { citizen, useCitizen, type Contact, type Dependant } from "@/lib/citizen-store";
@@ -57,6 +57,7 @@ const GUIDES = [
 ] as const;
 
 export default function Profile() {
+  const nav = useNavigate();
   const state = useCitizen();
   const incident = useDemo();
   const [panel, setPanel] = useState<Panel>("overview");
@@ -162,6 +163,7 @@ export default function Profile() {
               <Row icon={Shield} label="Medical aid" detail={medicalAid.provider || "Optional cover details"} onClick={() => open("coverage")} />
               <Row icon={Clock3} label="My requests" detail={incident.status === "idle" ? "Request history" : "An emergency request is active"} onClick={() => open("notifications")} />
               <Row icon={BookOpen} label="Emergency guidance" detail="First aid resources" onClick={() => open("guidance")} />
+              <Row icon={ShieldAlert} label="Safety tools" detail="Share your location with a trusted contact" onClick={() => nav({ to: "/safety" })} />
               <Row icon={Bell} label="Notifications" onClick={() => open("notifications")} />
             </div>
           </section>

@@ -119,3 +119,11 @@ Never remove service-not-connected safety messaging until these integrations are
 - Hold-to-SOS and silent emergency alerts are deferred pending accessibility research and authorised backend service protocols. Current SOS remains a tap to location verification followed by a separate confirmation.
 
 See [Panic-state UX](PANIC_STATE_UX.md) for design decisions and remaining production safety work.
+
+## Trusted-contact safety additions
+
+A dedicated Safety Tools screen is accessible from Profile. It includes explicit permission-based, foreground-only location collection, a short ephemeral trail on the existing Leaflet map, and a user-directed SMS compose link for an existing trusted contact. It rejects stale coordinates and does not send or confirm delivery of any messages. The user's GPS trail is kept in memory only while the Safety Tools page is mounted.
+
+Automatic distress detection, background voice or shake activation, unattended SMS delivery, offline alert queuing, unattended check-in timers, and community responder dispatch remain native/backend and operational integration requirements. No UI should represent these as operational.
+
+See [Safety capabilities](SAFETY_CAPABILITIES.md) for native dependencies, platform restrictions, monitoring requirements, and the review of unverified SMS delivery claims.
