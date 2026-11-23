@@ -48,7 +48,7 @@ function MapScreen() {
   return <div className="flex h-full flex-col bg-[#162235]">
     <div className="relative min-h-0 flex-1 isolate">
       <LazyMap
-        mode="locate" center={s.location.pos}
+        mode="locate" center={s.location.pos} accuracy={s.location.source === "gps" ? s.location.accuracy : undefined}
         pickEnabled={!locked}
         onPick={(pos) => { demo.setLocation({ pos, label: "Dropped pin", source: "manual", observedAt: Date.now() }); setResults([]); }}
         className="absolute inset-0"
