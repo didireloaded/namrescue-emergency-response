@@ -1,14 +1,44 @@
-# Welcome to your Lovable project
+# NamRescue Emergency Response
+
+Create a NEW Lovable project named "NamRescue" for an iOS-inspired Namibia emergency ambulance experience. This first build is a HIGH-FIDELITY INTERACTIVE MOBILE WEB PROTOTYPE, not a live emergency service. The user has APPROVED a precise 5-screen cinematic mobile design and wants the UI built very faithfully, NOT reimagined. Reconstruct the following approved visual reference screen-by-screen using these measurements, composition, and functional flows. Prioritize striking visual fidelity, minimal text and convincing working interactions over adding features. No generic AI landing page, no feature grids, no purple, no glassmorphism, no glowing gradients, no giant marketing copy, no fake admin dashboard. Build actual app screens and usable flow.
+
+REFERENCE LOCK / EXACT ART DIRECTION:
+- Five consecutive 390x844-ish iPhone 15 Pro portrait screens, rounded corner edge-to-edge visual compositions. Use fluid mobile responsive viewport with max-width 440px for app, fullscreen on phones; desktop can show centred iPhone simulator with optional screen picker, not a normal website.
+- Visual character: cinematic, sophisticated iOS, photo-first. Near-black / midnight navy (#101722 to #192436), white text on the photographic screens, critical safety red (#E21D2C / #FF3045) only for SOS and high-priority actions, white/offwhite (#F9FAFC) sheets and crew screen, an occasional blue system location marker and green success indication. Minimal 1px borders, subtle elevation, rounded large 24-32px iOS bottom sheets. SF Pro look via system font (-apple-system, BlinkMacSystemFont, "SF Pro Display", Inter fallback); headings semibold/bold; generous whitespace; tabular large ETA.
+- Edge-to-edge true photographic media with intentional dark gradient OVER PHOTOGRAPH only for legibility, not full-screen fake CSS gradients or blurry abstract blobs. Source relevant, high-quality, realistically photographed Windhoek-at-dusk cityscape, ambulance light bar closeup, ambulance crew/vehicle and ambulance night arrival photos. Do not display broken URLs, stock watermarks, fake government crests or bogus staff identities. If exact photograph not available, replace with a strong legitimately usable visual asset of the same composition and mood. Do not build giant emoji icons.
+- iOS visual details: Dynamic Island-style black pill and status line at top (09:41), safe areas, 44+ px touch zones, floating circle back on photographic pages, white swipeable-looking bottom sheets with small drag handle, bottom home indicator, haptics-like micro-animations, consistent top typography, icon-only controls where appropriate using lucide-react.
+- Image proportions and composition are CRITICAL. On the home screen the atmospheric Windhoek dusk panoramic city photo takes the upper ~60% behind text. On screen 2 a photo of a red ambulance rooftop flashing light dominates upper ~58%; location confirmation is a small white rounded map inset in lower half. On screen 3 an edge-to-edge satellite/street map fills ~70% top with ambulance-to-patient route, dark rounded bottom overlay. On screen 4 the top 58% is a full-bleed documentary-style photo of a female Black Namibian paramedic (demo), with a white bottom panel taking lower 45%. On screen 5 photo of open ambulance back and reflective-vest medical staff takes full-screen background under a dark bottom-overlay with the arrival success.
+- Do not hardcode the entire composite mockup into a background image: all buttons, labels, route states, panels and navigation must be genuinely constructed with React and accessible.
+
+SCREEN 1 — HOME / SOS, start route "/":
+Top at x~26, safe 65: small generic NamRescue wordmark with subtitle "Emergency Medical Services", small notification bell upper right; NO false Namibian coat of arms or government endorsement. At y~280 overlay large left aligned white headline in 3 lines: "Get / emergency / medical help." The lower half: one HUGE rounded red rectangular button labelled "SOS" with ambulance icon and small "Request Ambulance", glowing/bright red top border only if subtle, tap starts request flow (DO NOT actually contact live emergency services). Below two equal near-black cards with white lucide phone icon and person/group icon: "Call" with contact (do not hardcode 10111 unless verified) and "Help Someone Else". Native-feeling bottom nav with 4 understated icons: Home, Map, History, Profile; Home red active. Text under nav at least 12-13px. Keep text short, screen feels confident not busy.
+SCREEN 2 — CONFIRM LOCATION, route "/request": Night close-up red ambulance light bar photo as full width background, rounded semi-transparent dark back circle at top-left. Large bold heading at x~30 lower-mid: "Request\nan Ambulance" in white. Under heading, large rounded white map panel (~width calc(100%-40px), height 220px): show an actual tiled map, centred on Windhoek area with user blue location dot and accuracy circle, GPS locate action, a white anchored bottom label: "Your location" and "Windhoek, Namibia" and chevron. If real maps keys unavailable, use a free OSM tile layer using Leaflet; test map actually loads. If browser geo permission denied, show clear fallback to select location or manual location search/marker placement. Big red bottom CTA "Confirm Emergency" with round white arrow-leading icon. The action enters demo request received state, not a real dispatch.
+SCREEN 3 — TRACKING, route "/tracking": full-bleed high-fidelity dark Windhoek satellite map with visible roads/neighbourhood, white route from small ambulance marker toward red victim-location pin. Overlay round back at upper left. A deep midnight navy bottom sheet rising from y~525 with "Ambulance\nEn Route" on upper left, tiny green "Live" label in top-right ONLY when real live data exists; for prototype label "Demo". Massive bold "7 min" (simulated) and under "Estimated arrival". Low-key red completion line. Must animate a demo ambulance traveling along route (simulated) but clearly identify mode as demo and never claim real GPS. Add accessible action to view response crew and contact. IMPORTANT add an intermediary received/waiting-for-dispatch screen as a clear state either using a modal/sheet between confirmation and tracking or button "Simulate assignment"; never immediately imply a real ambulance was dispatched.
+SCREEN 4 — RESPONSE TEAM, route "/team": top 55% documentary portrait of female Namibian paramedic wearing dark navy EMT jacket and reflective lime stripe, blurred real ambulance behind. Soft rounded white sheet covering lower 47%, heading "Your Response Team" in bold. Horizontal thumbnail tiles: two photographic staff thumbnails (one female, one male) and a third placeholder/team icon; selected first has thin red border. White rounded ambulance plate containing realistic ambulance vehicle picture on left and "GRN 024\nUnit 07" on right (DEMO IDENTIFIERS, not actual government credentials), right chevron. At bottom two separate white pill icon actions: red phone call outline and red message outline. Minimal metadata only, no lengthy staff bios or ages, no unverified names.
+SCREEN 5 — ARRIVED, route "/arrived": full-bleed documentary ambulance with open rear, staff member in lime reflective vest viewed from behind, red beacon lights at night. Center-lower translucent dark navy card with large green check circular icon, bold white 2-line "Ambulance\nArrived", subheading "The medical team is on site." white CTA pill "View Details" with arrow; route to summary when clicked. No false real response.
+
+INTERACTIVE REQUIREMENTS:
+- Main flow works: SOS -> /request -> request received sheet awaiting dispatcher -> user explicitly clicks "Simulate ambulance assignment" -> /tracking -> /team via crew action, back to tracking -> "Simulate arrival" -> /arrived -> event summary.
+- Other tabs should work via lightweight simple screens. Profile can display demo emergency medical ID, privacy toggles. History shows empty/simulated requests. Help Someone Else opens choose person/location action sheet. No onboarding or sign-in gate for emergency action.
+- "Call" opens device dialer with phone number only after number is configured and verified in production, otherwise clearly displays "Emergency numbers require verification" in this prototype. Do not fabricate functioning emergency communications. Any simulated message controls are explicitly labeled demo.
+- Tracking maps interact (zoom/pan), location request geolocation with failure handling. Show clear simulated status, no claim of live ambulance, crew identity, dispatch, or government authorisation.
+- Use React+TypeScript, shadcn only for primitive behavior if useful, Tailwind for composition, lucide-react icons, React Router, responsive @media plus iOS safe area env(). Safe touch targets >=44px; reduced-motion preferences; no layout cut-off.
+- Use near-perfect visual hierarchy based on above reference not generic style! 5 screens should be recognizable side-by-side as the APPROVED creative direction. Avoid lengthy explanations. Use no AI-generated graphics, emojis or fake badges.
+- Ensure project build runs with zero errors, verify each screen at 390x844 and 375x812, and fix any scroll, overlap, missing image issues. If imagery or map tiles cannot be loaded, document blockers honestly rather than substituting abstract shapes.
+
+IMPORTANT: Prototype only. Show an unobtrusive "DEMO" mark that persists across request/tracking so people cannot mistake it for an operational ambulance system. Do not publish as an official Namibian government service. Do NOT connect to real dispatch, store patient data, or request personal medical details at this stage.
+
+Begin BUILDING NOW. Do not just reply with a plan.
 
 This project was built with [Lovable](https://lovable.dev).
 
 ## Build with Lovable
 
-Open your project in the [Lovable editor](https://lovable.dev) and keep building.
+Continue developing this project in the [Lovable editor](https://lovable.dev/projects/d3339c0f-4937-425f-a6cb-83aa39a1ff29).
 
 - **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: connect the project to GitHub and every change made in Lovable is committed straight to your repository.
-- **Full ownership**: this code is yours. Push to your repository and your changes sync back into Lovable, ready for your next prompt.
+- **Stay in sync**: every change made in Lovable is committed straight to this repository.
+- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
 
 ## Development
 
@@ -20,10 +50,3 @@ cd <repository-name>
 npm i
 npm run dev
 ```
-
-## Built with
-
-- TanStack Start
-- TypeScript
-- React
-- Tailwind CSS
