@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { citizen } from "./citizen-store";
 import { contactsFor, dialUri, isConfiguredArea, townsFor } from "./regions";
 import { demo, WINDHOEK } from "./demo-store";
+import { prepareDispatchDraft } from "./dispatch-contract";
 
 describe("Namibia area and emergency directory", () => {
   it("supports regional onboarding and unlisted settlements", () => {
@@ -47,6 +48,21 @@ describe("emergency location is not home location", () => {
     demo.setIncidentArea({ region: "Kavango East", town: "Rundu" });
     expect(citizen.get().homeArea.town).toBe("Windhoek");
     expect(demo.get().incidentArea.town).toBe("Rundu");
+  });
+  it("prepares dispatch draft from incident GPS, not the citizen home town", () => {
+    citizen.updateHomeArea({ region: "Khomas", town: "Windhoek" });
+    demo.setLocation({ pos: [-17.921, 19.765], label: "Rundu scene", source: "manual" });
+    demo.setIncidentArea({ region: "Kavango East", town: "Rundu" });
+    const draft = prepareDispatchDraft(demo.get());
+    expect(draft.ok).toBe(true);
+    if (draft.ok) {
+      expect(draft.value.incidentLocation.latitude).toBeCloseTo(-17.921);
+      expect(draft.value.emergencyAreaHint?.town).toBe("Rundu");
+      expect(draft.value.ambulanceAssignment).toBe("requires_authorised_dispatch");
+    }
+  });
+  it("rejects a default map centre instead of treating it as the patient's coordinates", () => {
+    expect(prepareDispatchDraft(demo.get())).toEqual({ ok: false, reason: "location_unconfirmed" });
   });
   it("clears outdated incident area when the location pin moves", () => {
     demo.setIncidentArea({ region: "Khomas", town: "Windhoek" });
