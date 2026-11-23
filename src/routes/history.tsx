@@ -23,7 +23,7 @@ function Requests() {
       <div className="relative -mt-4 space-y-5 rounded-t-[28px] bg-[#F7F9FC] px-5 pb-8 pt-6">
         {active ? <section className="rounded-[22px] bg-white p-5">
           <div className="flex items-center justify-between"><span className="text-[12px] font-semibold text-[#D22232]">CURRENT REQUEST</span><span className="text-[12px] text-[#65738A]">{incident.reference}</span></div>
-          <h2 className="mt-3 text-[23px] font-bold">{incident.status === "received" ? "Awaiting assignment" : incident.status === "arrived" ? "Team on scene" : "Response assigned"}</h2>
+          <h2 className="mt-3 text-[23px] font-bold">{incident.status === "received" ? "Preview · not dispatched" : incident.status === "arrived" ? "Simulated arrival" : "Simulated assignment"}</h2>
           <p className="mt-2 flex items-center gap-2 text-[13px] text-[#64748B]"><MapPin className="size-4" />{incident.location.label}</p>
           <div className="mt-5 space-y-0">
             {[["Request received",true],["Ambulance assigned",incident.status === "assigned"],["On scene",incident.status === "arrived"]].map(([label,done],i)=>
