@@ -156,9 +156,9 @@ export const driver = {
     return true;
   },
   accept: () => state.stage === "offered" && !state.outOfServiceReason && !state.fatigueBreakRequested && nextStage("accepted"),
-  depart: () => state.stage === "accepted" && nextStage("enRoute"),
+  depart: () => state.stage === "accepted" && !state.outOfServiceReason && nextStage("enRoute"),
   sceneArrival: () => state.stage === "enRoute" && nextStage("atScene"),
-  beginTransport: () => state.stage === "atScene" && nextStage("transporting"),
+  beginTransport: () => state.stage === "atScene" && !state.outOfServiceReason && nextStage("transporting"),
   hospitalArrival: () => state.stage === "transporting" && nextStage("atHospital"),
   closeTrip: () => {
     if (state.stage !== "atHospital" || !state.assignment) return false;
