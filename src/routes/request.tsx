@@ -8,6 +8,8 @@ import { demo, useDemo, type EmergencyType } from "@/lib/demo-store";
 import { useCitizen } from "@/lib/citizen-store";
 import { useGeolocate } from "@/lib/use-geolocate";
 import { searchNamibia, type Place } from "@/lib/map-service";
+import { AreaSelector } from "@/components/nr/AreaSelector";
+import { areaLabel, isConfiguredArea } from "@/lib/regions";
 
 export const Route = createFileRoute("/request")({
   head: () => ({ meta: [
@@ -26,10 +28,12 @@ function Request() {
   const geo = useGeolocate();
   const citizen = useCitizen();
   const [details, setDetails] = useState(false);
+  const [showArea, setShowArea] = useState(false);
+  const [questions, setQuestions] = useState(false);
   const [pick, setPick] = useState(false);
   const [q, setQ] = useState("");
   const [results, setResults] = useState<Place[]>([]);
-  useEffect(() => { if (citizen.preferences.locationOnRequest) geo.locate(); }, [geo.locate, citizen.preferences.locationOnRequest]);
+  useEffect(() => { if (citizen.preferences.locationOnRequest && !s.remoteIncident && s.status === "idle") geo.locate(); }, [geo.locate, citizen.preferences.locationOnRequest, s.remoteIncident, s.status]);
   const search = async () => {
     try { setResults(await searchNamibia(q)); } catch { setResults([]); }
   };
@@ -49,6 +53,9 @@ function Request() {
             <ChevronRight className="size-5 text-sheet-muted" />
           </button>
         </div>
+        <button onClick={() => setShowArea(true)} className="mt-3 flex min-h-11 w-full items-center justify-between rounded-2xl border border-hairline bg-ink/70 px-4 text-left text-[13px] text-on-photo">
+          <span>Emergency area: {isConfiguredArea(s.incidentArea) ? areaLabel(s.incidentArea) : "Confirm town (optional)"}</span><ChevronDown className="size-4" />
+        </button>
         <button onClick={() => setDetails(true)} className="mt-3 flex min-h-11 w-full items-center justify-between rounded-2xl border border-hairline bg-ink/70 px-4 text-left text-[13px] text-on-photo">
           <span>{s.incidentType}{s.forOther ? " · For someone else" : ""}</span><span className="flex items-center gap-1 text-on-photo-muted">Edit details <ChevronDown className="size-4" /></span>
         </button>
@@ -68,6 +75,13 @@ function Request() {
             <li key={r.lat + r.lon}><button className="min-h-12 w-full border-b border-sheet-line py-2 text-left text-[14px]" onClick={() => { demo.setLocation({ pos: [+r.lat, +r.lon], label: r.display_name.split(",").slice(0, 2).join(","), source: "manual" }); setPick(false); }}>{r.display_name}</button></li>
           ))}
         </ul>
+      </Sheet>
+      <Sheet open={showArea} onClose={() => setShowArea(false)} title="Emergency area">
+        <h2 className="text-[20px] font-bold">Where is the emergency?</h2>
+        <p className="mt-1 mb-4 text-[13px] text-sheet-muted">This is separate from your home location. The exact map pin matters more than town boundaries.</p>
+        <AreaSelector value={s.incidentArea} onChange={(area) => demo.setIncidentArea(area)} />
+        {isConfiguredArea(citizen.homeArea) && <button onClick={() => demo.setIncidentArea(citizen.homeArea)} className="mt-3 min-h-11 w-full rounded-2xl border border-sheet-line text-[14px] font-semibold">Use my home town</button>}
+        <button onClick={() => setShowArea(false)} className="mt-3 min-h-12 w-full rounded-full bg-sheet-foreground text-[14px] font-semibold text-sheet">Done</button>
       </Sheet>
       <Sheet open={details} onClose={() => setDetails(false)} title="Emergency details">
         <h2 className="text-[21px] font-bold">Emergency details</h2>
@@ -95,7 +109,32 @@ function Request() {
         <p className="text-[12px] text-sheet-muted">Reference {s.reference ?? "Pending"}</p>
         <p className="mt-1 flex items-center gap-1 text-[15px] text-sheet-muted">Waiting for a dispatcher<span className="animate-dot">.</span><span className="animate-dot [animation-delay:.2s]">.</span><span className="animate-dot [animation-delay:.4s]">.</span></p>
         <p className="mt-3 rounded-2xl bg-sheet-line/60 p-3 text-[13px] text-sheet-muted">No real ambulance or emergency service has been contacted.</p>
-        <button onClick={() => { demo.assign(); nav({ to: "/tracking" }); }} className="press mt-4 h-14 w-full rounded-full bg-sheet-foreground font-semibold text-sheet">Simulate ambulance assignment</button>
+        <button onClick={() => setQuestions(v => !v)} className="mt-3 flex min-h-12 w-full items-center justify-between rounded-2xl bg-[#EFF3F8] px-4 text-left text-[14px] font-semibold">
+          {s.incidentType === "Road accident" ? "Tell us about the accident" : "What is wrong with the patient?"}
+          <ChevronDown className="size-4" />
+        </button>
+        {questions && <div className="mt-3 space-y-3 rounded-2xl border border-sheet-line p-3">
+          {s.incidentType === "Road accident" ? <>
+            <label className="block text-[12px] font-semibold">Are you at the scene?</label>
+            <select value={s.accident.onScene} onChange={(e) => demo.setAccidentDetails({ onScene: e.target.value as "yes" | "no" | "unsure" })} className="min-h-11 w-full rounded-xl border border-sheet-line bg-white px-3 text-[14px]">
+              <option value="unsure">Not sure</option><option value="yes">Yes, at the scene</option><option value="no">No, reporting from elsewhere</option>
+            </select>
+            {([
+              ["How many people may be injured?", "injuredCount"],
+              ["How many vehicles are involved?", "vehicleCount"],
+              ["Road / highway or landmark", "road"],
+              ["Direction of travel", "direction"],
+              ["Visible dangers (fire, traffic, fuel)", "danger"],
+            ] as const).map(([label, key]) => <label key={key} className="block text-[12px] font-semibold">{label}<input value={s.accident[key]} onChange={(e) => demo.setAccidentDetails({ [key]: e.target.value.slice(0, 100) })} placeholder="Not sure" className="mt-1 min-h-11 w-full rounded-xl border border-sheet-line bg-white px-3 text-[14px] font-normal" /></label>)}
+          </> : <>
+            <label className="block text-[12px] font-semibold">What is happening?</label>
+            <div className="grid grid-cols-2 gap-2">
+              {["Difficulty breathing", "Unresponsive", "Bleeding / injury", "Severe pain", "Not sure"].map((condition) => <button key={condition} onClick={() => demo.setPatientCondition(condition)} className={"min-h-12 rounded-xl border px-2 text-[12px] font-semibold " + (s.patientCondition === condition ? "border-sos bg-[#FFF0F1] text-[#AF2936]" : "border-sheet-line")}>{condition}</button>)}
+            </div>
+          </>}
+          <p className="text-[11px] leading-relaxed text-sheet-muted">Answers are optional. Do not put yourself in danger to gather information.</p>
+        </div>
+        <button onClick={() => { if (demo.assign()) nav({ to: "/tracking" }); }} className="press mt-4 h-14 w-full rounded-full bg-sheet-foreground font-semibold text-sheet">Simulate ambulance assignment</button>
         <button onClick={() => demo.cancel()} className="mt-2 h-12 w-full font-medium text-sos">Cancel request</button>
       </Sheet>
     </div>
