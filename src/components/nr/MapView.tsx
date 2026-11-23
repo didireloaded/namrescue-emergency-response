@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import type { Map as LMap, Marker, Polyline } from "leaflet";
+import type { Map as LMap, Marker, Polyline, Circle } from "leaflet";
 import { pointAlong, type LatLng } from "@/lib/demo-sim";
 
 const AMB_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 10H6"/><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.28a1 1 0 0 0-.684-.948l-1.923-.641a1 1 0 0 1-.578-.502l-1.539-3.076A1 1 0 0 0 16.382 8H14"/><path d="M8 8v4"/><path d="M9 18h6"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg>`;
@@ -12,6 +12,7 @@ interface Props {
   /** tracking: ambulance start */
   from?: LatLng;
   progress?: number;
+  accuracy?: number;
   onPick?: (pos: LatLng) => void;
   pickEnabled?: boolean;
   recenterKey?: number;
@@ -19,10 +20,11 @@ interface Props {
   label: string;
 }
 
-export default function MapView({ mode, center, from, progress = 0, onPick, pickEnabled, recenterKey = 0, className, label }: Props) {
+export default function MapView({ mode, center, from, progress = 0, accuracy, onPick, pickEnabled, recenterKey = 0, className, label }: Props) {
   const el = useRef<HTMLDivElement>(null);
   const mapRef = useRef<LMap | null>(null);
   const userRef = useRef<Marker | null>(null);
+  const accuracyRef = useRef<Circle | null>(null);
   const ambRef = useRef<Marker | null>(null);
   const routeRef = useRef<LatLng[]>([]);
   const lineRef = useRef<Polyline | null>(null);
@@ -50,7 +52,7 @@ export default function MapView({ mode, center, from, progress = 0, onPick, pick
       }
 
       if (mode === "locate") {
-        L.circle(center, { radius: 120, color: "transparent", fillColor: "oklch(0.62 0.19 255)", fillOpacity: 0.16 }).addTo(map);
+        if (typeof accuracy === "number" && accuracy > 0) accuracyRef.current = L.circle(center, { radius: accuracy, color: "transparent", fillColor: "#237AD5", fillOpacity: 0.16 }).addTo(map);
         userRef.current = L.marker(center, { icon: L.divIcon({ className: "", html: '<div class="nr-user-dot"></div>', iconSize: [18, 18], iconAnchor: [9, 9] }), keyboard: false }).addTo(map);
         map.on("click", (e) => {
           if (pickRef.current.pickEnabled && pickRef.current.onPick) pickRef.current.onPick([e.latlng.lat, e.latlng.lng]);
@@ -81,8 +83,10 @@ export default function MapView({ mode, center, from, progress = 0, onPick, pick
     const map = mapRef.current;
     if (!map || mode !== "locate") return;
     userRef.current?.setLatLng(center);
+    accuracyRef.current?.setLatLng(center);
+    if (typeof accuracy === "number" && accuracy > 0) accuracyRef.current?.setRadius(accuracy);
     map.flyTo(center, Math.max(map.getZoom(), 15), { duration: 0.6 });
-  }, [center[0], center[1], recenterKey, mode]);
+  }, [center[0], center[1], recenterKey, mode, accuracy]);
 
   useEffect(() => {
     if (mode === "tracking" && ambRef.current && routeRef.current.length) ambRef.current.setLatLng(pointAlong(routeRef.current, progress));
