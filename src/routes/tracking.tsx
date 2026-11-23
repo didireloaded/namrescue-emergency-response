@@ -22,9 +22,10 @@ function Tracking() {
   const nav = useNavigate();
   const [now, setNow] = useState(() => 0);
   const [rk, setRk] = useState(0);
-  useEffect(() => { if (!demo.get().assignedAt) demo.assign(); setNow(Date.now()); const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, []);
+  useEffect(() => { setNow(Date.now()); const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, []);
   const p = tripProgress(s.assignedAt, now || (s.assignedAt ?? 0));
   const from: [number, number] = [s.location.pos[0] - 0.018, s.location.pos[1] + 0.024];
+  if (s.status !== "assigned" && s.status !== "arrived") return <div className="flex h-full flex-col items-start justify-center bg-ink px-7 text-on-photo"><h1 className="text-[27px] font-bold">No ambulance assigned</h1><p className="mt-3 text-[15px] text-on-photo-muted">A response team must be assigned before tracking is available.</p><Link to="/" className="mt-6 rounded-full bg-sos px-6 py-4 font-semibold">Return to SOS</Link></div>;
   return (
     <div className="relative h-full bg-ink">
       <LazyMap mode="tracking" center={s.location.pos} from={from} progress={p} recenterKey={rk} className="absolute inset-x-0 top-0 h-[72%] isolate" label="Simulated ambulance route map" />
