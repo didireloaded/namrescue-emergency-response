@@ -9,7 +9,7 @@
 - The emergency request starts with location confirmation. Once a preview request is created, users can optionally add patient symptoms or road-accident details. No additional questionnaire blocks SOS.
 - After simulated assignment, Leaflet displays the route with responder information. The position, ETA, crew photo and vehicle identity remain explicitly simulated until a verified backend exists.
 - Medical ID and optional medical-aid coverage are separate UI areas. Coverage must never gate emergency assistance.
-- The post-arrival summary allows an optional five-star rating and brief feedback, saved in the session only.
+- The post-completion summary allows an optional five-star rating and brief feedback, saved in the session only.
 
 ## Published contact references
 
