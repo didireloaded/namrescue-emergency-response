@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowRight, ChevronRight, LocateFixed, Loader2, ChevronDown } from "lucide-react";
+import { ArrowRight, ChevronRight, LocateFixed, Loader2, ChevronDown, Phone } from "lucide-react";
 import { BackButton, Sheet } from "@/components/nr/chrome";
 import { LazyMap } from "@/components/nr/LazyMap";
 import { IMG } from "@/lib/images";
@@ -9,6 +9,7 @@ import { useCitizen } from "@/lib/citizen-store";
 import { useGeolocate } from "@/lib/use-geolocate";
 import { searchNamibia, type Place } from "@/lib/map-service";
 import { AreaSelector } from "@/components/nr/AreaSelector";
+import { EmergencyCallSheet } from "@/components/nr/EmergencyCallSheet";
 import { areaLabel, isConfiguredArea } from "@/lib/regions";
 
 export const Route = createFileRoute("/request")({
@@ -30,6 +31,7 @@ function Request() {
   const [details, setDetails] = useState(false);
   const [showArea, setShowArea] = useState(false);
   const [questions, setQuestions] = useState(false);
+  const [callOpen, setCallOpen] = useState(false);
   const [pick, setPick] = useState(false);
   const [q, setQ] = useState("");
   const [results, setResults] = useState<Place[]>([]);
@@ -109,6 +111,7 @@ function Request() {
         <p className="text-[12px] text-sheet-muted">Reference {s.reference ?? "Pending"}</p>
         <p className="mt-1 flex items-center gap-1 text-[15px] text-sheet-muted">Waiting for a dispatcher<span className="animate-dot">.</span><span className="animate-dot [animation-delay:.2s]">.</span><span className="animate-dot [animation-delay:.4s]">.</span></p>
         <p className="mt-3 rounded-2xl bg-sheet-line/60 p-3 text-[13px] text-sheet-muted">No real ambulance or emergency service has been contacted.</p>
+        <button onClick={() => setCallOpen(true)} className="mt-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl border border-[#D7E0EA] bg-white text-[14px] font-semibold text-[#1D4C7B]"><Phone className="size-4" />Call emergency services</button>
         <button onClick={() => setQuestions(v => !v)} className="mt-3 flex min-h-12 w-full items-center justify-between rounded-2xl bg-[#EFF3F8] px-4 text-left text-[14px] font-semibold">
           {s.incidentType === "Road accident" ? "Tell us about the accident" : "What is wrong with the patient?"}
           <ChevronDown className="size-4" />
@@ -149,6 +152,7 @@ function Request() {
         <button onClick={() => { if (demo.assign()) nav({ to: "/tracking" }); }} className="press mt-4 h-14 w-full rounded-full bg-sheet-foreground font-semibold text-sheet">Simulate ambulance assignment</button>
         <button onClick={() => demo.cancel()} className="mt-2 h-12 w-full font-medium text-sos">Cancel request</button>
       </Sheet>
+      <EmergencyCallSheet open={callOpen} onClose={() => setCallOpen(false)} initialArea={s.incidentArea} />
     </div>
   );
 }
