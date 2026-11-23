@@ -1,6 +1,6 @@
 # Panic-state UX and accessibility review
 
-This change set implements the supplied review's highest-value changes without turning NamRescue into a generic Material Design application.
+This change set implements the supplied review's highest-value changes without turning CareNear into a generic Material Design application.
 
 ## Interaction approach
 
