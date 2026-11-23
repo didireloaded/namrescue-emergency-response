@@ -1,5 +1,5 @@
 import { Link, useRouter } from "@tanstack/react-router";
-import { ChevronLeft, Home, Map, Clock, User } from "lucide-react";
+import { ChevronLeft, Home, Map, HeartPulse, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function StatusBar() {
@@ -40,7 +40,7 @@ export function BackButton({ to, light = false, label = "Back" }: { to?: "/" | "
 const TABS = [
   { to: "/", label: "Home", Icon: Home },
   { to: "/map", label: "Map", Icon: Map },
-  { to: "/history", label: "History", Icon: Clock },
+  { to: "/medical", label: "Medical ID", Icon: HeartPulse },
   { to: "/profile", label: "Profile", Icon: User },
 ] as const;
 
