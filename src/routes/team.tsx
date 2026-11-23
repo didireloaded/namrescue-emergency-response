@@ -28,7 +28,7 @@ function Team() {
       <section className="absolute inset-x-0 bottom-0 h-[47%] rounded-t-[32px] bg-sheet px-6 pt-2.5 pb-safe text-sheet-foreground shadow-sheet">
         <div className="mx-auto mb-4 h-[5px] w-10 rounded-full bg-sheet-line" />
         <h1 className="text-[24px] font-bold">Your Response Team</h1>
-        <p className="text-[12px] text-sheet-muted">Demo crew · not real identities</p>
+        <p className="text-[12px] text-sheet-muted">Example responders · not verified identities</p>
         <div className="mt-4 flex gap-3">
           {crew.map((c, i) => (
             <button key={c.role} onClick={() => setSel(i)} aria-pressed={sel === i} aria-label={c.role} className={cn("size-[64px] overflow-hidden rounded-[18px] border-2", sel === i ? "border-sos" : "border-transparent")}>
@@ -39,7 +39,7 @@ function Team() {
         </div>
         <button onClick={() => setNote(true)} className="press mt-4 flex w-full items-center gap-4 rounded-[22px] border border-sheet-line bg-on-photo p-2.5 text-left shadow-card">
           <img src={IMG.ambSide} alt="Ambulance vehicle" className="h-14 w-20 rounded-[14px] object-cover" />
-          <span className="flex-1"><span className="block text-[16px] font-bold">GRN 024</span><span className="text-[13px] text-sheet-muted">Unit 07 · demo</span></span>
+          <span className="flex-1"><span className="block text-[16px] font-bold">NR-DEMO-07</span><span className="text-[13px] text-sheet-muted">Vehicle registration not verified</span></span>
           <ChevronRight className="size-5 text-sheet-muted" />
         </button>
         <div className="mt-4 grid grid-cols-2 gap-3">
@@ -49,7 +49,7 @@ function Team() {
       </section>
       <Sheet open={note} onClose={() => setNote(false)} title="Demo only">
         <h2 className="text-[20px] font-bold">Demo only</h2>
-        <p className="mt-2 text-[14px] text-sheet-muted">Crew contact and vehicle details are placeholders in this prototype.</p>
+        <p className="mt-2 text-[14px] text-sheet-muted">Real responder names, photos and vehicle registrations will be shown only after government dispatch integration verifies them. Personal driving licence numbers and ages are not public.</p>
       </Sheet>
     </div>
   );
