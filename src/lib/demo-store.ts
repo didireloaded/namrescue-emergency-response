@@ -62,7 +62,7 @@ export const canSubmit = (status: RequestStatus, source: LocationSource) =>
  */
 export const demo = {
   get: () => state,
-  setLocation: (location: DemoLocation) => set({ location }),
+  setLocation: (location: DemoLocation) => { if (isActive(state.status)) return false; set({ location }); return true; },
   setDetails: (patch: Partial<Pick<DemoState, "incidentType" | "note" | "recipientId" | "forOther">>) =>
     set(patch),
   start: (forOther = false) => {
