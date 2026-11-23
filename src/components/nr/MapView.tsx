@@ -12,7 +12,7 @@ interface Props {
   /** tracking: ambulance start */
   from?: LatLng;
   progress?: number;
-  accuracy?: number;
+  accuracy?: number | undefined;
   onPick?: (pos: LatLng) => void;
   pickEnabled?: boolean;
   recenterKey?: number;
@@ -84,7 +84,16 @@ export default function MapView({ mode, center, from, progress = 0, accuracy, on
     if (!map || mode !== "locate") return;
     userRef.current?.setLatLng(center);
     accuracyRef.current?.setLatLng(center);
-    if (typeof accuracy === "number" && accuracy > 0) accuracyRef.current?.setRadius(accuracy);
+    if (typeof accuracy === "number" && accuracy > 0) {
+      if (accuracyRef.current) accuracyRef.current.setRadius(accuracy);
+      else import("leaflet").then(({ default: L }) => {
+        if (!mapRef.current || accuracyRef.current) return;
+        accuracyRef.current = L.circle(center, { radius: accuracy, color: "transparent", fillColor: "#237AD5", fillOpacity: 0.16 }).addTo(mapRef.current);
+      });
+    } else if (accuracyRef.current) {
+      accuracyRef.current.remove();
+      accuracyRef.current = null;
+    }
     map.flyTo(center, Math.max(map.getZoom(), 15), { duration: 0.6 });
   }, [center[0], center[1], recenterKey, mode, accuracy]);
 
