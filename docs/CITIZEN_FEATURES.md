@@ -77,7 +77,7 @@ Statuses: **UI** means interactive app experience; **Preview** means simulated s
 56. Accessibility — Partial, touch targets, reduced motion and semantics; full audit pending
 57. Privacy controls — UI, server-side enforcement pending
 58. Profile management — UI with onboarding, optional avatar, home region/town, medical history and medical aid details
-59. Post-response feedback — UI, session-only rating/comments; authenticated service submission remains backend-dependent
+59. Post-response feedback — UI after explicit response completion, session-only rating/comments; authenticated service submission remains backend-dependent
 60. Support — UI, connection status explained
 
 ## Security and operational constraints
