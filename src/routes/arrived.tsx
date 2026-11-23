@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Check } from "lucide-react";
 import { IMG } from "@/lib/images";
+import { useDemo } from "@/lib/demo-store";
 
 export const Route = createFileRoute("/arrived")({
   head: () => ({ meta: [
@@ -14,6 +15,8 @@ export const Route = createFileRoute("/arrived")({
 });
 
 function Arrived() {
+  const request = useDemo();
+  if (request.status !== "arrived") return <div className="flex h-full flex-col items-start justify-center bg-ink px-7 text-on-photo"><h1 className="text-[27px] font-bold">No arrival to report</h1><p className="mt-3 text-on-photo-muted">This page only appears after a completed response.</p><Link to="/" className="mt-6 rounded-full bg-sos px-6 py-4 font-semibold">Return to SOS</Link></div>;
   return (
     <div className="relative h-full bg-ink">
       <img src={IMG.rearOpen} alt="Ambulance with rear doors open and crew" className="absolute inset-0 h-full w-full object-cover brightness-75" />
