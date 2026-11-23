@@ -5,6 +5,7 @@ import { BottomNav } from "@/components/nr/chrome";
 import { LazyMap } from "@/components/nr/LazyMap";
 import { demo, isActive, useDemo } from "@/lib/demo-store";
 import { useGeolocate } from "@/lib/use-geolocate";
+import { searchNamibia, type Place } from "@/lib/map-service";
 
 export const Route = createFileRoute("/map")({
   head: () => ({ meta: [
@@ -13,7 +14,7 @@ export const Route = createFileRoute("/map")({
   ] }),
   component: MapScreen,
 });
-type Place = { display_name: string; lat: string; lon: string };
+
 function MapScreen() {
   const s = useDemo();
   const geo = useGeolocate();
@@ -27,10 +28,7 @@ function MapScreen() {
     if (query.trim().length < 3) return;
     setSearching(true); setError("");
     try {
-      const url = "https://nominatim.openstreetmap.org/search?format=json&countrycodes=na&limit=5&q=" + encodeURIComponent(query.trim());
-      const response = await fetch(url);
-      if (!response.ok) throw new Error("search unavailable");
-      const json = await response.json() as Place[];
+      const json = await searchNamibia(query);
       setResults(json);
       if (!json.length) setError("No places found. Try another address or tap the map.");
     } catch { setError("Address lookup unavailable. You can still tap the map."); }
