@@ -52,6 +52,7 @@ export interface DriverState {
   events: { stage: DriverStage; time: number }[];
   history: DriverTripRecord[];
   outOfServiceReason: string | null;
+  maintenanceDue: string | null;
   supplies: Record<SupplyKey, SupplyItem>;
   messages: DriverMessage[];
   handoverNote: string;
@@ -90,9 +91,14 @@ const freshSupplies = (): DriverState["supplies"] => ({
   stretcher: { label: "Patient stretcher", count: 1, minimum: 1, expiry: null, critical: true },
 });
 export const SUPPLY_KEYS: readonly SupplyKey[] = ["oxygen", "gloves", "dressings", "stretcher"];
+export function dateOverdue(isoDate: string | null, now = new Date()): boolean {
+  if (!isoDate || !/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) return false;
+  const end = new Date(isoDate + "T23:59:59");
+  return !Number.isNaN(end.getTime()) && end.getTime() < now.getTime();
+}
 export function supplyIssue(item: SupplyItem, today = new Date()): string | null {
   if (item.critical && item.count < item.minimum) return "Low stock";
-  if (item.expiry && !Number.isNaN(Date.parse(item.expiry)) && new Date(item.expiry + "T23:59:59").getTime() < today.getTime()) return "Expired";
+  if (dateOverdue(item.expiry, today)) return "Expired";
   return null;
 }
 const initial: DriverState = {
@@ -104,6 +110,7 @@ const initial: DriverState = {
   events: [],
   history: [],
   outOfServiceReason: null,
+  maintenanceDue: null,
   supplies: freshSupplies(),
   messages: [],
   handoverNote: "",
@@ -127,7 +134,7 @@ export const driver = {
   },
   allChecksComplete: () => Object.values(state.inspection).every(Boolean),
   supplyIssues: () => SUPPLY_KEYS.filter(key => supplyIssue(state.supplies[key]) !== null),
-  readyToWork: () => driver.allChecksComplete() && !state.outOfServiceReason &&
+  readyToWork: () => driver.allChecksComplete() && !state.outOfServiceReason && !dateOverdue(state.maintenanceDue) &&
     !state.fatigueBreakRequested && driver.supplyIssues().length === 0,
   startShift: () => {
     if (state.stage !== "offDuty" || !driver.readyToWork()) return false;
@@ -172,6 +179,18 @@ export const driver = {
     const clean = reason.trim().slice(0, 280);
     if (!clean) return false;
     set({ outOfServiceReason: clean, stage: state.stage === "available" ? "offDuty" : state.stage });
+    return true;
+  },
+  setMaintenanceDue: (date: string | null) => {
+    if (date !== null && !/^\d{4}-\d{2}-\d{2}$/.test(date)) return false;
+    if (!["offDuty", "available", "completed"].includes(state.stage)) return false;
+    set({ maintenanceDue: date });
+    return true;
+  },
+  setSupplyExpiry: (key: SupplyKey, expiry: string | null) => {
+    if (expiry !== null && !/^\d{4}-\d{2}-\d{2}$/.test(expiry)) return false;
+    if (!["offDuty", "available", "completed"].includes(state.stage)) return false;
+    set({ supplies: { ...state.supplies, [key]: { ...state.supplies[key], expiry } } });
     return true;
   },
   setSupplyCount: (key: SupplyKey, count: number) => {
