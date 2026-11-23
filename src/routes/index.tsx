@@ -50,8 +50,8 @@ function Home() {
           <button onClick={() => setAreaOpen(true)} className="mt-4 flex min-h-10 items-center gap-1.5 rounded-full border border-white/25 bg-ink/60 px-3 text-left text-[12px] font-semibold text-white">
             <MapPin className="size-3.5 text-sos-bright" /> {areaLabel(profile.homeArea)} <ChevronDown className="size-3" />
           </button>
-          {connectivity === "offline" && <button onClick={() => setCallOpen(true)} role="status" className="mt-2 flex min-h-11 items-center gap-2 rounded-full border border-[#FFE8C6]/40 bg-[#3E332B]/95 px-3 text-left text-[12px] font-semibold text-white">
-            Offline detected · tap to call
+          {connectivity === "offline" && <button onClick={() => setCallOpen(true)} className="mt-2 flex min-h-11 items-center gap-2 rounded-full border border-[#FFE8C6]/40 bg-[#3E332B]/95 px-3 text-left text-[12px] font-semibold text-white">
+            <span aria-live="polite">Offline detected · tap to call</span>
           </button>}
         </div>
         <button aria-label="Notifications" onClick={() => setSheet("notifications")} className="press mt-2 grid size-11 place-items-center rounded-full border border-hairline bg-ink/50 text-on-photo"><Bell className="size-5" /></button>
