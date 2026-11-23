@@ -1,4 +1,5 @@
 import { Link, useRouter } from "@tanstack/react-router";
+import { useEffect, useRef, type KeyboardEvent } from "react";
 import { ChevronLeft, Home, Map, HeartPulse, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -65,12 +66,47 @@ export function BottomNav({ active }: { active: (typeof TABS)[number]["to"] }) {
 }
 
 export function Sheet({ open, onClose, children, title, dark = false }: { open: boolean; onClose: () => void; children: React.ReactNode; title: string; dark?: boolean }) {
+  const contentRef = useRef<HTMLDivElement>(null);
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
+
+  useEffect(() => {
+    if (!open) return;
+    const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    contentRef.current?.focus({ preventScroll: true });
+    return () => { if (previous?.isConnected) previous.focus({ preventScroll: true }); };
+  }, [open]);
+
+  const handleKeys = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
+      closeRef.current();
+      return;
+    }
+    if (event.key !== "Tab" || !contentRef.current) return;
+    const selectable = contentRef.current.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    );
+    const focusable = Array.from(selectable).filter(el => el.getClientRects().length > 0);
+    if (!focusable.length) { event.preventDefault(); contentRef.current.focus(); return; }
+    const first = focusable[0]!;
+    const last = focusable[focusable.length - 1]!;
+    if (event.shiftKey && (document.activeElement === first || document.activeElement === contentRef.current)) {
+      event.preventDefault(); last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault(); first.focus();
+    }
+  };
+
   if (!open) return null;
   return (
-    <div className="absolute inset-0 z-[70]" role="dialog" aria-modal="true" aria-label={title}>
-      <button type="button" aria-label="Close" onClick={onClose} className="animate-fade-in absolute inset-0 bg-ink/60" />
-      <div className={cn("animate-sheet-up absolute inset-x-0 bottom-0 max-h-[92%] overflow-y-auto overscroll-contain rounded-t-[28px] px-5 pb-safe pt-2.5 shadow-sheet", dark ? "bg-ink-2 text-on-photo" : "bg-sheet text-sheet-foreground")}>
-        <div className={cn("mx-auto mb-4 h-[5px] w-10 rounded-full", dark ? "bg-hairline" : "bg-sheet-line")} />
+    <div className="absolute inset-0 z-[70]" role="presentation">
+      <button type="button" aria-label="Dismiss" tabIndex={-1} onClick={onClose} className="animate-fade-in absolute inset-0 bg-ink/60" />
+      <div ref={contentRef} role="dialog" aria-modal="true" aria-label={title} tabIndex={-1}
+        onKeyDown={handleKeys}
+        className={cn("animate-sheet-up absolute inset-x-0 bottom-0 max-h-[92%] overflow-y-auto overscroll-contain rounded-t-[28px] px-5 pb-safe pt-2.5 shadow-sheet outline-none", dark ? "bg-ink-2 text-on-photo" : "bg-sheet text-sheet-foreground")}>
+        <div aria-hidden="true" className={cn("mx-auto mb-4 h-[5px] w-10 rounded-full", dark ? "bg-hairline" : "bg-sheet-line")} />
         <div className="pb-4">{children}</div>
       </div>
     </div>

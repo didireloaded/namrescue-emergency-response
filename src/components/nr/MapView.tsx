@@ -93,7 +93,9 @@ export default function MapView({ mode, center, from, progress = 0, accuracy, on
       accuracyRef.current.remove();
       accuracyRef.current = null;
     }
-    map.flyTo(center, Math.max(map.getZoom(), 15), { duration: 0.6 });
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduceMotion) map.setView(center, Math.max(map.getZoom(), 15), { animate: false });
+    else map.flyTo(center, Math.max(map.getZoom(), 15), { duration: 0.6 });
   }, [center[0], center[1], recenterKey, mode, accuracy]);
 
   useEffect(() => {

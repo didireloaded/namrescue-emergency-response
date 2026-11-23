@@ -14,6 +14,7 @@ import { useRouterState } from "@tanstack/react-router";
 import appCss from "../styles.css?url";
 import { StatusBar, HomeIndicator, DemoBadge } from "../components/nr/chrome";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { useCitizen } from "../lib/citizen-store";
 
 function NotFoundComponent() {
   return (
@@ -122,6 +123,11 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const largeText = useCitizen().preferences.largeText;
+  useEffect(() => {
+    document.documentElement.classList.toggle("nr-large-text", largeText);
+    return () => document.documentElement.classList.remove("nr-large-text");
+  }, [largeText]);
 
   return (
     <QueryClientProvider client={queryClient}>

@@ -202,3 +202,28 @@
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
 }
+
+/* Keyboard, Switch Control, reduced motion and legibility in high-stress flows. */
+.device-screen :is(button, a, input, select, textarea):focus-visible {
+  outline: 3px solid var(--locate);
+  outline-offset: 3px;
+}
+.nr-large-text .device-screen [class~="text-[11px]"],
+.nr-large-text .device-screen [class~="text-[12px]"],
+.nr-large-text .device-screen [class~="text-[13px]"],
+.nr-large-text .device-screen [class~="text-[14px]"] {
+  font-size: 1rem;
+  line-height: 1.45;
+}
+@media (prefers-contrast: more) {
+  :root {
+    --on-photo-muted: oklch(1 0 0 / 92%);
+    --sheet-muted: oklch(0.39 0.03 258);
+    --hairline: oklch(1 0 0 / 38%);
+  }
+  .device-screen :is(button, a):focus-visible { outline-width: 4px; }
+}
+@media (forced-colors: active) {
+  .device-screen :is(button, a):focus-visible { outline: 3px solid Highlight; }
+  .nr-user-dot, .nr-amb, .nr-pin { border: 2px solid CanvasText; }
+}

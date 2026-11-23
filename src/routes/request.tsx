@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ArrowRight, ChevronRight, LocateFixed, Loader2, ChevronDown, Phone } from "lucide-react";
 import { BackButton, Sheet } from "@/components/nr/chrome";
 import { LazyMap } from "@/components/nr/LazyMap";
@@ -11,6 +11,7 @@ import { searchNamibia, type Place } from "@/lib/map-service";
 import { AreaSelector } from "@/components/nr/AreaSelector";
 import { EmergencyCallSheet } from "@/components/nr/EmergencyCallSheet";
 import { areaLabel, isConfiguredArea } from "@/lib/regions";
+import { useConnectivity, canCreatePreviewRequest } from "@/lib/connectivity";
 
 export const Route = createFileRoute("/request")({
   head: () => ({ meta: [
@@ -35,7 +36,8 @@ function Request() {
   const [pick, setPick] = useState(false);
   const [q, setQ] = useState("");
   const [results, setResults] = useState<Place[]>([]);
-  useEffect(() => { if (citizen.preferences.locationOnRequest && !s.remoteIncident && s.status === "idle") geo.locate(); }, [geo.locate, citizen.preferences.locationOnRequest, s.remoteIncident, s.status]);
+  const [cancelConfirm, setCancelConfirm] = useState(false);
+  const connectivity = useConnectivity();
   const search = async () => {
     try { setResults(await searchNamibia(q)); } catch { setResults([]); }
   };
@@ -47,7 +49,8 @@ function Request() {
       <div className="relative z-10 px-5 pt-safe"><div className="mt-2"><BackButton to="/" /></div></div>
       <div className="relative z-10 mt-auto px-5 pb-safe">
         <h1 className="px-2.5 text-[38px] font-bold leading-[1.05] tracking-tight text-on-photo">Request<br />an Ambulance</h1>
-        <div className="relative mt-5 h-[clamp(180px,26dvh,220px)] overflow-hidden rounded-[28px] bg-sheet isolate">
+        <p className="mt-2 px-2.5 text-[12px] leading-relaxed text-on-photo-muted">Use GPS only if you choose, or tap the map to set the emergency location.</p>
+        <div className="relative mt-3 h-[clamp(170px,24dvh,220px)] overflow-hidden rounded-[28px] bg-sheet isolate">
           <LazyMap mode="locate" center={s.location.pos} accuracy={s.location.source === "gps" ? s.location.accuracy : undefined} pickEnabled onPick={(pos) => demo.setLocation({ pos, label: "Pinned location", source: "manual" })} className="absolute inset-0" label="Your location map" />
           <button onClick={geo.locate} aria-label="Use my location" className="press absolute right-3 top-3 z-[500] grid size-11 place-items-center rounded-full bg-sheet text-locate shadow-card">{geo.state === "locating" ? <Loader2 className="size-5 animate-spin" /> : <LocateFixed className="size-5" />}</button>
           <button onClick={() => setPick(true)} className="absolute inset-x-2 bottom-2 z-[500] flex min-h-14 items-center justify-between rounded-[20px] bg-sheet px-4 text-left text-sheet-foreground shadow-card">
@@ -61,8 +64,9 @@ function Request() {
         <button onClick={() => setDetails(true)} className="mt-3 flex min-h-11 w-full items-center justify-between rounded-2xl border border-hairline bg-ink/70 px-4 text-left text-[13px] text-on-photo">
           <span>{s.incidentType}{s.forOther ? " · For someone else" : ""}</span><span className="flex items-center gap-1 text-on-photo-muted">Edit details <ChevronDown className="size-4" /></span>
         </button>
-        <button onClick={() => { if (!demo.confirm()) setPick(true); }} className="press shadow-sos mt-4 mb-2 flex h-16 w-full items-center gap-4 rounded-full bg-sos pl-2 pr-6 text-[17px] font-semibold text-on-photo">
-          <span className="grid size-12 place-items-center rounded-full bg-on-photo text-sos"><ArrowRight className="size-5" /></span>Confirm Emergency
+        {connectivity === "offline" && <p role="alert" className="mt-2 rounded-xl bg-[#51352A] px-3 py-2 text-[12px] font-semibold text-white">No data connection detected. Use Emergency Calls instead. Nothing will be sent.</p>}
+        <button onClick={() => { if (connectivity === "unknown") return; if (!canCreatePreviewRequest(connectivity)) { setCallOpen(true); return; } if (!demo.confirm()) setPick(true); }} disabled={connectivity === "unknown"} className="press shadow-sos mt-4 mb-2 flex h-16 w-full items-center gap-4 rounded-full bg-sos pl-2 pr-6 text-[17px] font-semibold text-on-photo">
+          <span className="grid size-12 place-items-center rounded-full bg-on-photo text-sos"><ArrowRight className="size-5" /></span>{connectivity === "offline" ? "Call Emergency Services" : connectivity === "unknown" ? "Checking connection" : "Confirm Preview Request"}
         </button>
       </div>
       <Sheet open={pick} onClose={() => setPick(false)} title="Set location">
@@ -105,11 +109,11 @@ function Request() {
         <textarea value={s.note} onChange={(e) => demo.setDetails({ note: e.target.value.slice(0, 500) })} placeholder="A few words to help dispatch" className="mt-2 min-h-20 w-full rounded-2xl border border-sheet-line bg-white p-3 text-[14px] text-sheet-foreground outline-none" />
         <button onClick={() => setDetails(false)} className="mt-3 min-h-13 w-full rounded-full bg-sheet-foreground font-semibold text-sheet">Done</button>
       </Sheet>
-      <Sheet open={s.status === "received"} onClose={() => demo.cancel()} title="Request received">
+      <Sheet open={s.status === "received"} onClose={() => setCancelConfirm(true)} title="Preview request status">
         <p className="text-[12px] font-semibold tracking-[0.12em] text-caution">DEMO</p>
-        <h2 className="mt-1 text-[22px] font-bold">Request received</h2>
+        <h2 className="mt-1 text-[22px] font-bold">Preview request created</h2>
         <p className="text-[12px] text-sheet-muted">Reference {s.reference ?? "Pending"}</p>
-        <p className="mt-1 flex items-center gap-1 text-[15px] text-sheet-muted">Waiting for a dispatcher<span className="animate-dot">.</span><span className="animate-dot [animation-delay:.2s]">.</span><span className="animate-dot [animation-delay:.4s]">.</span></p>
+        <p className="mt-1 text-[14px] text-sheet-muted">A real dispatcher has not received this. Simulated assignment is available for testing.</p>
         <p className="mt-3 rounded-2xl bg-sheet-line/60 p-3 text-[13px] text-sheet-muted">No real ambulance or emergency service has been contacted.</p>
         <button onClick={() => setCallOpen(true)} className="mt-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl border border-[#D7E0EA] bg-white text-[14px] font-semibold text-[#1D4C7B]"><Phone className="size-4" />Call emergency services</button>
         <button onClick={() => setQuestions(v => !v)} className="mt-3 flex min-h-12 w-full items-center justify-between rounded-2xl bg-[#EFF3F8] px-4 text-left text-[14px] font-semibold">
@@ -150,7 +154,13 @@ function Request() {
           <p className="text-[11px] leading-relaxed text-sheet-muted">Answers are optional. Do not put yourself in danger to gather information.</p>
         </div>}
         <button onClick={() => { if (demo.assign()) nav({ to: "/tracking" }); }} className="press mt-4 h-14 w-full rounded-full bg-sheet-foreground font-semibold text-sheet">Simulate ambulance assignment</button>
-        <button onClick={() => demo.cancel()} className="mt-2 h-12 w-full font-medium text-sos">Cancel request</button>
+        <button onClick={() => setCancelConfirm(true)} className="mt-2 h-12 w-full font-medium text-sos">Cancel preview request</button>
+      </Sheet>
+      <Sheet open={cancelConfirm} onClose={() => setCancelConfirm(false)} title="Cancel preview request">
+        <h2 className="text-[21px] font-bold">Cancel this request?</h2>
+        <p className="mt-2 text-[14px] leading-relaxed text-sheet-muted">This will clear the simulated request. No real emergency service has been contacted.</p>
+        <button onClick={() => setCancelConfirm(false)} className="mt-5 min-h-13 w-full rounded-2xl bg-sheet-foreground text-[15px] font-semibold text-sheet">Keep request</button>
+        <button onClick={() => { demo.cancel(); setCancelConfirm(false); nav({ to: "/" }); }} className="mt-2 min-h-13 w-full rounded-2xl bg-[#FFF0F1] text-[15px] font-semibold text-[#B91C2B]">Cancel preview request</button>
       </Sheet>
       <EmergencyCallSheet open={callOpen} onClose={() => setCallOpen(false)} initialArea={s.incidentArea} />
     </div>
