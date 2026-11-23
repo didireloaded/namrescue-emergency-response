@@ -141,6 +141,7 @@ function HomeScreen({ to }: { to: (tab: Tab) => void }) {
       {inspected === VEHICLE_ITEMS.length && <Btn disabled={!driver.readyToWork()} label="Start my shift" Icon={Power} onClick={() => driver.startShift()} />}
       {state.outOfServiceReason && <p className="rounded-2xl bg-[#FFF0F1] p-3 text-[13px] font-semibold text-[#9F2938]">Out of service. {state.outOfServiceReason}</p>}
       {driver.supplyIssues().length > 0 && <p className="rounded-2xl bg-[#FFF0E6] p-3 text-[13px] font-semibold text-[#8F5822]">Critical equipment issues must be resolved before starting a shift.</p>}
+      {state.fatigueBreakRequested && <p className="rounded-2xl bg-[#FFF0E6] p-3 text-[13px] font-semibold text-[#8F5822]">Rest requested. Clear the training rest flag in Crew safety when fit for duty.</p>}
     </> : <>
       <div className={surface + " p-5"}>
         <div className="flex items-center justify-between gap-3"><span className="text-[12px] font-semibold tracking-wider text-[#73859C]">ASSIGNED VEHICLE</span><Truck className="size-5 text-[#41617D]" /></div>
@@ -237,6 +238,7 @@ function VehicleScreen() {
     {checksLocked && <p className={secondaryText}>Vehicle checks are locked while a response is active. In a live system, defects and out-of-service status would be reported to fleet control.</p>}
     {state.outOfServiceReason && <p className="rounded-2xl bg-[#FFF0F1] p-3 text-[13px] font-semibold text-[#A52F3A]">Out of service: {state.outOfServiceReason}</p>}
     {driver.supplyIssues().length > 0 && <p className="rounded-2xl bg-[#FFF0E5] p-3 text-[13px] font-semibold text-[#96521B]">Stock inspection required: {driver.supplyIssues().length} critical items</p>}
+    {state.maintenanceDue && new Date(state.maintenanceDue+"T23:59:59").getTime() < Date.now() && <p className="rounded-2xl bg-[#FFF0F1] p-3 text-[13px] font-semibold text-[#A52F3A]">Vehicle maintenance date is overdue. New training assignments blocked.</p>}
     {state.stage==="offDuty" && <Btn disabled={!driver.readyToWork()} label="Start my shift" Icon={Power} onClick={()=>driver.startShift()}/>}
     </>}
     {view === "equipment" && <DriverInventoryPanel/>}
@@ -308,7 +310,7 @@ export default function DriverApp(){
           </div>
           <div className="mt-3 grid grid-cols-2 gap-2">
             <button onClick={()=>driver.decline()} className="min-h-12 rounded-xl border border-[#E5B3BA] text-[13px] font-bold text-[#9C2634]">Decline</button>
-            <button onClick={()=>{if(driver.accept())setTab("dispatch");}} className="min-h-12 rounded-xl bg-[#C52C3D] text-[13px] font-bold text-white">Accept in one tap</button>
+            <button disabled={Boolean(state.outOfServiceReason||state.fatigueBreakRequested)} onClick={()=>{if(driver.accept())setTab("dispatch");}} className="min-h-12 rounded-xl bg-[#C52C3D] text-[13px] font-bold text-white disabled:opacity-40">Accept in one tap</button>
           </div>
           <button onClick={()=>setTab("dispatch")} className="mt-2 min-h-11 w-full text-[13px] font-semibold text-[#654959]">Review full incident details</button>
         </div>}
