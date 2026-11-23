@@ -5,9 +5,9 @@ import { demo, useDemo } from "@/lib/demo-store";
 
 export const Route = createFileRoute("/arrived")({
   head: () => ({ meta: [
-    { title: "Ambulance Arrived — NamRescue demo" },
+    { title: "Ambulance Arrived — CareNear demo" },
     { name: "description", content: "Simulated arrival of the response team." },
-    { property: "og:title", content: "Ambulance Arrived — NamRescue demo" },
+    { property: "og:title", content: "Ambulance Arrived — CareNear demo" },
     { property: "og:description", content: "Simulated arrival of the response team." },
     { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" },
   ] }),
