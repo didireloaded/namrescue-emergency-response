@@ -18,9 +18,9 @@ function Summary() {
   const [rating, setRating] = useState(incident.rating);
   const [comment, setComment] = useState(incident.feedback);
   const [saved, setSaved] = useState(false);
-  if (incident.status !== "arrived") return <div className="flex h-full flex-col items-start justify-center bg-sheet px-6 text-sheet-foreground">
+  if (incident.status !== "completed") return <div className="flex h-full flex-col items-start justify-center bg-sheet px-6 text-sheet-foreground">
     <h1 className="text-[26px] font-bold">No completed response yet</h1>
-    <p className="mt-2 text-[14px] text-sheet-muted">Incident information appears here only after arrival has been confirmed.</p>
+    <p className="mt-2 text-[14px] text-sheet-muted">Incident feedback appears after the simulated response is completed.</p>
     <Link to="/" className="mt-5 rounded-2xl bg-[#162235] px-5 py-4 text-white">Back to SOS</Link>
   </div>;
   const rows = [
