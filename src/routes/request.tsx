@@ -65,8 +65,8 @@ function Request() {
           <span>{s.incidentType}{s.forOther ? " · For someone else" : ""}</span><span className="flex items-center gap-1 text-on-photo-muted">Edit details <ChevronDown className="size-4" /></span>
         </button>
         {connectivity === "offline" && <p role="alert" className="mt-2 rounded-xl bg-[#51352A] px-3 py-2 text-[12px] font-semibold text-white">No data connection detected. Use Emergency Calls instead. Nothing will be sent.</p>}
-        <button onClick={() => { if (!canCreatePreviewRequest(connectivity)) { setCallOpen(true); return; } if (!demo.confirm()) setPick(true); }} className="press shadow-sos mt-4 mb-2 flex h-16 w-full items-center gap-4 rounded-full bg-sos pl-2 pr-6 text-[17px] font-semibold text-on-photo">
-          <span className="grid size-12 place-items-center rounded-full bg-on-photo text-sos"><ArrowRight className="size-5" /></span>{connectivity === "offline" ? "Call Emergency Services" : "Confirm Preview Request"}
+        <button onClick={() => { if (connectivity === "unknown") return; if (!canCreatePreviewRequest(connectivity)) { setCallOpen(true); return; } if (!demo.confirm()) setPick(true); }} disabled={connectivity === "unknown"} className="press shadow-sos mt-4 mb-2 flex h-16 w-full items-center gap-4 rounded-full bg-sos pl-2 pr-6 text-[17px] font-semibold text-on-photo">
+          <span className="grid size-12 place-items-center rounded-full bg-on-photo text-sos"><ArrowRight className="size-5" /></span>{connectivity === "offline" ? "Call Emergency Services" : connectivity === "unknown" ? "Checking connection" : "Confirm Preview Request"}
         </button>
       </div>
       <Sheet open={pick} onClose={() => setPick(false)} title="Set location">
