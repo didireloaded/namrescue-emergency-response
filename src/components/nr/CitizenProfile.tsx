@@ -190,7 +190,7 @@ export default function Profile() {
           </>}
           {panel === "contacts" && <>
             <p className={subtitle}>People you would like contacted during an emergency.</p>
-            {contacts.map((c) => <div key={c.id} className="flex items-center justify-between rounded-2xl bg-white px-4 py-3"><div><p className="font-semibold">{c.name}</p><p className={subtitle}>{c.relationship} · {c.phone}</p></div><button aria-label={"Remove " + c.name} onClick={() => citizen.removeContact(c.id)} className="grid size-11 place-items-center text-[#C82B3A]"><Trash2 className="size-5" /></button></div>)}
+            {contacts.map((c) => <div key={c.id} className="flex items-center justify-between rounded-2xl bg-white px-4 py-3"><div className="min-w-0 flex-1"><p className="font-semibold">{c.name}</p><p className={subtitle}>{c.relationship} · {c.phone}</p></div><a aria-label={"Call " + c.name} href={"tel:" + c.phone.replace(/[^0-9+]/g, "")} className="grid size-11 place-items-center rounded-full bg-[#EFF5FB] text-[#246AC1]"><Phone className="size-5" /></a><button aria-label={"Remove " + c.name} onClick={() => citizen.removeContact(c.id)} className="grid size-11 place-items-center text-[#C82B3A]"><Trash2 className="size-5" /></button></div>)}
             <ContactForm value={contactDraft} set={setContactDraft} />
             <button onClick={addContact} disabled={!contactDraft.name.trim() || !contactDraft.phone.trim()} className={primary}><Plus className="size-4" /> Add contact</button>
             <Note>Contact notifications require a verified communications service and consent. Nothing will be sent from this screen yet.</Note>
