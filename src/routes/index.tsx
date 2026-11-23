@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Ambulance, Bell, Phone, Users, MapPin, Navigation, CarFront, ChevronDown } from "lucide-react";
 import { BottomNav, Sheet } from "@/components/nr/chrome";
 import { IMG } from "@/lib/images";
@@ -28,9 +28,6 @@ function Home() {
   const connectivity = useConnectivity();
   const [callOpen, setCallOpen] = useState(false);
   const [areaOpen, setAreaOpen] = useState(false);
-  const [welcome, setWelcome] = useState(false);
-  useEffect(() => { try { if (!window.localStorage.getItem("nr-welcome-dismissed")) setWelcome(true); } catch { /* optional browser preference unavailable */ } }, []);
-  const dismissWelcome = () => { setWelcome(false); try { window.localStorage.setItem("nr-welcome-dismissed", "1"); } catch { /* no preference stored */ } };
   const [sheet, setSheet] = useState<null | "other" | "notifications">(null);
   const openEmergency = () => {
     if (incident.status === "arrived") return nav({ to: "/arrived" });
@@ -74,14 +71,6 @@ function Home() {
         <p className="mt-1 mb-4 text-[13px] text-sheet-muted">For local emergency contacts. Each SOS uses the actual emergency location.</p>
         <AreaSelector value={profile.homeArea} onChange={(area) => citizen.updateHomeArea(area)} />
         <button onClick={() => setAreaOpen(false)} className="mt-4 min-h-12 w-full rounded-full bg-sheet-foreground font-semibold text-sheet">Done</button>
-      </Sheet>
-      <Sheet open={welcome} onClose={dismissWelcome} title="Welcome to NamRescue">
-        <p className="text-[12px] font-semibold tracking-[.12em] text-[#C22B3A]">WELCOME</p>
-        <h2 className="mt-2 text-[26px] font-bold tracking-tight">Help, when it matters.</h2>
-        <p className="mt-2 text-[14px] leading-relaxed text-sheet-muted">Set up your Medical ID and trusted contacts. This is optional and never required to reach SOS.</p>
-        <button onClick={() => { dismissWelcome(); nav({ to: "/profile" }); }} className="mt-5 flex min-h-13 w-full items-center justify-center rounded-2xl bg-sheet-foreground font-semibold text-sheet">Set up my profile</button>
-        <button onClick={() => { dismissWelcome(); openEmergency(); }} className="mt-2 flex min-h-13 w-full items-center justify-center rounded-2xl border border-sos font-semibold text-sos">Go to SOS</button>
-        <button onClick={dismissWelcome} className="mt-2 min-h-11 w-full text-[13px] font-semibold text-sheet-muted">Skip for now</button>
       </Sheet>
       <Sheet open={sheet === "notifications"} onClose={() => setSheet(null)} title="Updates">
         <h2 className="text-[21px] font-bold">Your updates</h2>
