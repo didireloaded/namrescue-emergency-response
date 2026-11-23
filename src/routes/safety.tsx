@@ -22,7 +22,7 @@ export const Route = createFileRoute("/safety")({
 
 const button = "flex min-h-13 w-full items-center justify-center gap-2 rounded-2xl px-4 text-[14px] font-semibold";
 const info = "text-[13px] leading-relaxed text-[#63728B]";
-type Tracking = "idle" | "active" | "paused" | "unavailable";
+type Tracking = "idle" | "locating" | "active" | "paused" | "unavailable";
 
 function SafetyTools() {
   const { contacts } = useCitizen();
@@ -60,7 +60,7 @@ function SafetyTools() {
     setNotice("");
     setLast(null);
     setTrail([]);
-    setTracking("active");
+    setTracking("locating");
     watch.current = navigator.geolocation.watchPosition(
       (position) => {
         const point: SafetyLocation = {
@@ -69,6 +69,7 @@ function SafetyTools() {
           observedAt: position.timestamp,
         };
         setLast(point);
+        setTracking("active");
         setTrail((previous) => appendTrail(previous, point));
         setNotice("");
       },
@@ -130,7 +131,7 @@ function SafetyTools() {
               </div>
               <span className={"rounded-full px-3 py-1.5 text-[12px] font-semibold " +
                 (tracking === "active" ? "bg-[#E7F4EC] text-[#196B49]" : "bg-[#E9EEF4] text-[#596A81]")}>
-                {tracking === "active" ? "Location active" : tracking === "paused" ? "Paused" : "Not tracking"}
+                {tracking === "active" ? "Location active" : tracking === "locating" ? "Finding location" : tracking === "paused" ? "Paused" : "Not tracking"}
               </span>
             </div>
 
@@ -164,7 +165,7 @@ function SafetyTools() {
               {!canShare && <p role="alert" className="mt-2 text-[12px] font-semibold text-[#B93242]">Location is older than five minutes. Restart location before sharing.</p>}
             </div>}
 
-            {tracking === "active" ?
+            {tracking === "active" || tracking === "locating" ?
               <button className={button + " bg-[#E8EEF5] text-[#233953]"} onClick={stop}>
                 <Square className="size-4" /> Stop location tracking
               </button> :
