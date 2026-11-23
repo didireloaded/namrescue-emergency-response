@@ -139,9 +139,11 @@ const SCREENS = [
   { to: "/tracking", n: "03", label: "Tracking" },
   { to: "/team", n: "04", label: "Response team" },
   { to: "/arrived", n: "05", label: "Arrived" },
+  { to: "/medical", n: "06", label: "Medical ID" },
+  { to: "/profile", n: "07", label: "Citizen profile" },
 ] as const;
 
-const LIGHT_ROUTES = ["/summary", "/history", "/profile"];
+const LIGHT_ROUTES = ["/summary", "/history", "/profile", "/medical"];
 
 function PhoneFrame({ children }: { children: ReactNode }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
@@ -163,7 +165,7 @@ function PhoneFrame({ children }: { children: ReactNode }) {
       <div className="device">
         <div className="device-screen device-screen-box">
           <StatusBar />
-          <DemoBadge />
+          {["/", "/request", "/tracking", "/team", "/arrived"].includes(path) && <DemoBadge />}
           {children}
           <HomeIndicator dark={LIGHT_ROUTES.includes(path)} />
         </div>
