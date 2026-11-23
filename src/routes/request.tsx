@@ -114,6 +114,18 @@ function Request() {
           <ChevronDown className="size-4" />
         </button>
         {questions && <div className="mt-3 space-y-3 rounded-2xl border border-sheet-line p-3">
+          {s.forOther && <section className="space-y-2 border-b border-sheet-line pb-3">
+            <p className="text-[12px] font-bold">Person who needs help (if known)</p>
+            {([
+              ["Name (optional)", "name"],
+              ["Approximate age", "approximateAge"],
+              ["Relationship or stranger", "relationship"],
+              ["Callback number", "callbackNumber"],
+            ] as const).map(([label, key]) => <label key={key} className="block text-[12px] font-semibold">
+              {label}
+              <input value={s.person[key]} onChange={e => demo.setPersonDetails({ [key]: e.target.value.slice(0,100) })} placeholder="Unknown / Not sure" className="mt-1 min-h-11 w-full rounded-xl border border-sheet-line bg-white px-3 text-[14px] font-normal" />
+            </label>)}
+          </section>}
           {s.incidentType === "Road accident" ? <>
             <label className="block text-[12px] font-semibold">Are you at the scene?</label>
             <select value={s.accident.onScene} onChange={(e) => demo.setAccidentDetails({ onScene: e.target.value as "yes" | "no" | "unsure" })} className="min-h-11 w-full rounded-xl border border-sheet-line bg-white px-3 text-[14px]">
