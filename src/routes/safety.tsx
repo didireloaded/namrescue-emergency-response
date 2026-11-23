@@ -173,6 +173,9 @@ function SafetyTools() {
               </button>
             }
             <p className={info}>GPS samples stay in this screen's memory. They are not continuously shared, uploaded, or recorded after you leave this page.</p>
+            <Link to="/map" className="flex min-h-11 items-center justify-center gap-2 text-[13px] font-semibold text-[#2069B9]">
+              <MapPin className="size-4" /> Need a manual location? Use the Map tab
+            </Link>
           </section>
 
           <section className="space-y-3 rounded-[22px] bg-white p-4">
