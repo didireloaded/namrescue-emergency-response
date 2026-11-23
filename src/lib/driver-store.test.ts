@@ -135,4 +135,19 @@ describe("CareNear driver shift and readiness", () => {
     expect(driver.updateHandover("x".repeat(2100))).toBe(false);
   });
 
+  it("prevents new driving stages after a reported mechanical defect", () => {
+    ready();
+    driver.simulateOffer();
+    driver.accept();
+    expect(driver.reportDefect("Steering fault")).toBe(true);
+    expect(driver.depart()).toBe(false);
+    expect(driver.get().stage).toBe("accepted");
+  });
+  it("keeps expiry changes locked during a response", () => {
+    ready();
+    driver.simulateOffer();
+    expect(driver.setSupplyExpiry("oxygen","2025-01-01")).toBe(false);
+    expect(driver.setMaintenanceDue("2020-01-01")).toBe(false);
+  });
+
 });
