@@ -30,6 +30,13 @@ function Home() {
   useEffect(() => { try { if (!window.localStorage.getItem("nr-welcome-dismissed")) setWelcome(true); } catch { /* optional browser preference unavailable */ } }, []);
   const dismissWelcome = () => { setWelcome(false); try { window.localStorage.setItem("nr-welcome-dismissed", "1"); } catch { /* no preference stored */ } };
   const [sheet, setSheet] = useState<null | "other" | "notifications">(null);
+  const openEmergency = () => {
+    if (incident.status === "arrived") return nav({ to: "/arrived" });
+    if (incident.status === "assigned") return nav({ to: "/tracking" });
+    if (incident.status === "received") return nav({ to: "/request" });
+    demo.start(false);
+    nav({ to: "/request" });
+  };
   return (
     <div className="relative flex h-full flex-col bg-ink">
       <img src={IMG.windhoek} alt="Windhoek city skyline" className="absolute inset-x-0 top-0 h-[62%] w-full object-cover brightness-[.7] saturate-[.8]" />
@@ -46,7 +53,7 @@ function Home() {
       </header>
       <h1 className="animate-rise relative z-10 mt-auto px-[26px] text-[42px] font-bold leading-[1.03] tracking-tight text-on-photo">Get<br />emergency<br />medical help.</h1>
       <div className="relative z-10 space-y-3 px-5 pb-4 pt-6">
-        <button onClick={() => { if (incident.status === "arrived") { nav({ to: "/arrived" }); return; } if (incident.status === "assigned") { nav({ to: "/tracking" }); return; } if (incident.status === "received") { nav({ to: "/request" }); return; } demo.start(false); nav({ to: "/request" }); }} className="press shadow-sos flex h-[132px] w-full items-center gap-5 rounded-[28px] border-t border-sos-bright bg-sos px-6 text-left text-on-photo">
+        <button onClick={openEmergency} className="press shadow-sos flex h-[132px] w-full items-center gap-5 rounded-[28px] border-t border-sos-bright bg-sos px-6 text-left text-on-photo">
           <span className="grid size-16 place-items-center rounded-full bg-on-photo/15"><Ambulance className="size-8" /></span>
           <span><span className="block text-[48px] font-bold leading-none tracking-tight">{incident.status === "arrived" ? "On site" : incident.status === "received" ? "Pending" : incident.status === "assigned" ? "Track" : "SOS"}</span><span className="text-[14px] font-medium opacity-90">{incident.status === "arrived" ? "View arrival details" : incident.status === "received" ? "View request status" : incident.status === "assigned" ? "Ambulance tracking" : "Request Ambulance"}</span></span>
         </button>
@@ -68,7 +75,7 @@ function Home() {
         <h2 className="mt-2 text-[26px] font-bold tracking-tight">Help, when it matters.</h2>
         <p className="mt-2 text-[14px] leading-relaxed text-sheet-muted">Set up your Medical ID and trusted contacts. This is optional and never required to reach SOS.</p>
         <button onClick={() => { dismissWelcome(); nav({ to: "/profile" }); }} className="mt-5 flex min-h-13 w-full items-center justify-center rounded-2xl bg-sheet-foreground font-semibold text-sheet">Set up my profile</button>
-        <button onClick={() => { dismissWelcome(); demo.start(false); nav({ to: "/request" }); }} className="mt-2 flex min-h-13 w-full items-center justify-center rounded-2xl border border-sos font-semibold text-sos">Go to SOS</button>
+        <button onClick={() => { dismissWelcome(); openEmergency(); }} className="mt-2 flex min-h-13 w-full items-center justify-center rounded-2xl border border-sos font-semibold text-sos">Go to SOS</button>
         <button onClick={dismissWelcome} className="mt-2 min-h-11 w-full text-[13px] font-semibold text-sheet-muted">Skip for now</button>
       </Sheet>
       <Sheet open={sheet === "notifications"} onClose={() => setSheet(null)} title="Updates">
@@ -83,7 +90,7 @@ function Home() {
           { I: MapPin, t: "Someone at another location", remote: true, accident: false },
           { I: CarFront, t: "Report a road accident", remote: false, accident: true },
         ].map(({ I, t, remote, accident }) => (
-          <button key={t} onClick={() => { demo.start(true, accident ? "Road accident" : "Medical emergency"); demo.setRemoteIncident(remote); setSheet(null); nav({ to: "/request" }); }} className="press mb-2 flex min-h-14 w-full items-center gap-3 rounded-2xl border border-sheet-line bg-on-photo px-4 text-left font-medium"><I className="size-5 text-sos" />{t}</button>
+          <button key={t} onClick={() => { if (!demo.start(true, accident ? "Road accident" : "Medical emergency")) { setSheet(null); openEmergency(); return; } demo.setRemoteIncident(remote); setSheet(null); nav({ to: "/request" }); }} className="press mb-2 flex min-h-14 w-full items-center gap-3 rounded-2xl border border-sheet-line bg-on-photo px-4 text-left font-medium"><I className="size-5 text-sos" />{t}</button>
         ))}
       </Sheet>
     </div>
