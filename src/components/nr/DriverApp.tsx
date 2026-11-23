@@ -58,7 +58,7 @@ function RouteMap({ destination, assignment }: { destination: "incident" | "hosp
     </div>
     <a target="_blank" rel="noopener noreferrer" href={mapsUrl}
       className={lightButton}><Navigation className="size-5" /> Open destination in Maps <ExternalLink className="size-4" /></a>
-    <p className={secondaryText}>Navigation opens an external map using example coordinates. Current ambulance position, routing and ETA are not connected.</p>
+    <p className={secondaryText}>Navigation opens an external map using example coordinates. Current ambulance position, routing and ETA are not connected. Pull over safely before interacting with the app.</p>
   </>;
 }
 function AssignmentSummary({ assignment }: { assignment: DriverAssignment }) {
