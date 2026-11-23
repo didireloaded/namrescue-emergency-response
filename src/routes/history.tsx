@@ -5,7 +5,7 @@ import { useDemo } from "@/lib/demo-store";
 
 export const Route = createFileRoute("/history")({
   head: () => ({ meta: [
-    { title: "My Requests | NamRescue" },
+    { title: "My Requests | CareNear" },
     { name: "description", content: "Current emergency request and previous incident history." },
   ] }),
   component: Requests,
