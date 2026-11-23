@@ -5,7 +5,7 @@ import { roadRoute } from "@/lib/map-service";
 
 const AMB_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 10H6"/><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.28a1 1 0 0 0-.684-.948l-1.923-.641a1 1 0 0 1-.578-.502l-1.539-3.076A1 1 0 0 0 16.382 8H14"/><path d="M8 8v4"/><path d="M9 18h6"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg>`;
 
-export type MapMode = "locate" | "tracking";
+export type MapMode = "locate" | "tracking" | "driver";
 
 interface Props {
   mode: MapMode;
@@ -62,7 +62,7 @@ export default function MapView({ mode, center, from, progress = 0, accuracy, tr
           if (pickRef.current.pickEnabled && pickRef.current.onPick) pickRef.current.onPick([e.latlng.lat, e.latlng.lng]);
         });
       } else if (from) {
-        L.marker(center, { icon: L.divIcon({ className: "", html: '<div class="nr-pin"></div>', iconSize: [30, 30], iconAnchor: [15, 30] }), title: "Your location" }).addTo(map);
+        L.marker(center, { icon: L.divIcon({ className: "", html: '<div class="nr-pin"></div>', iconSize: [30, 30], iconAnchor: [15, 30] }), title: mode === "driver" ? "Example destination" : "Your location" }).addTo(map);
         let path: LatLng[] = [from, [(from[0] + center[0]) / 2, from[1]], center];
         try {
           const result = await roadRoute(from, center);
@@ -72,7 +72,7 @@ export default function MapView({ mode, center, from, progress = 0, accuracy, tr
         routeRef.current = path;
         L.polyline(path, { color: "#0b1220", weight: 9, opacity: 0.55 }).addTo(map);
         lineRef.current = L.polyline(path, { color: "#ffffff", weight: 5, opacity: 0.95, lineCap: "round" }).addTo(map);
-        ambRef.current = L.marker(pointAlong(path, progressRef.current), { icon: L.divIcon({ className: "", html: `<div class="nr-amb">${AMB_SVG}</div>`, iconSize: [38, 38], iconAnchor: [19, 19] }), title: "Demo ambulance" }).addTo(map);
+        ambRef.current = L.marker(pointAlong(path, progressRef.current), { icon: L.divIcon({ className: "", html: `<div class="nr-amb">${AMB_SVG}</div>`, iconSize: [38, 38], iconAnchor: [19, 19] }), title: mode === "driver" ? "Illustrative unit position" : "Demo ambulance" }).addTo(map);
         map.fitBounds(L.latLngBounds(path), { paddingTopLeft: [40, 90], paddingBottomRight: [40, 330] });
       }
     })();
