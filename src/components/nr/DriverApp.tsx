@@ -300,6 +300,7 @@ export default function DriverApp(){
         <div className="flex items-center gap-2 rounded-xl bg-[#FFF1E5] px-3 py-2 text-[#915B18]">
           <AlertTriangle className="size-4 shrink-0"/><span className="text-[12px] font-semibold">Driver training preview. No real assignments.</span>
         </div>
+        {(tab==="home" || tab==="dispatch") && <DriverNetworkBanner/>}
         {state.stage==="offered" && tab!=="dispatch" && <div role="status" className="rounded-[22px] border border-[#F0C3C8] bg-[#FFF0F1] p-4">
           <div className="flex items-start gap-3"><Siren className="mt-0.5 size-6 shrink-0 text-[#B62C3C]"/>
             <div className="flex-1"><p className="text-[16px] font-bold text-[#9C2634]">Sample dispatch available</p>
