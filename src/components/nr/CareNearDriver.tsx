@@ -280,13 +280,13 @@ function DriverNextAction({ stage, go }: { stage: DriverStage; go: (s: Screen) =
   return null;
 }
 
-function TripDetails({ go }: { go: (s: Screen) => void }) {
+function TripDetails({ go, back = "dispatch" }: { go: (s: Screen) => void; back?: Screen }) {
   const state = useDriver();
   const a = state.assignment;
   const [section,setSection] = useState<TripSection>("incident");
   if (!a) return <EmptyDispatch go={go}/>;
   return <div className="min-h-full bg-[#F5F6F8]">
-    <PageHeader title="Trip details" onBack={() => go("dispatch")} trailing={<span className="text-[12px] font-semibold text-[#7B8798]">{a.id.slice(-3)}</span>} />
+    <PageHeader title="Trip details" onBack={() => go(back)} trailing={<span className="text-[12px] font-semibold text-[#7B8798]">{a.id.slice(-3)}</span>} />
     <div className="px-5 pb-7">
       <div className="flex items-center justify-between">
         <div><Eyebrow>Training incident</Eyebrow><h2 className="mt-1 text-[27px] font-bold tracking-[-0.04em]">{a.category}</h2></div>
@@ -338,7 +338,7 @@ function DispatchView({go}:{go:(s:Screen)=>void}) {
   const state=useDriver();
   if (!state.assignment) return <EmptyDispatch go={go}/>;
   if (state.stage==="offered") return <OfferScreen go={go} assignment={state.assignment}/>;
-  return <TripDetails go={go}/>;
+  return <TripDetails go={go} back="home"/>;
 }
 
 function NavigationView({ go }: { go: (s: Screen) => void }) {
@@ -658,6 +658,7 @@ export default function CareNearDriver() {
   const scroll = useRef<HTMLDivElement>(null);
   useEffect(()=>{ if(scroll.current)scroll.current.scrollTop=0; },[screen]);
   const go = (next:Screen)=>setScreen(next);
+  const showMainTabs = screen==="home" || screen==="trips" || screen==="profile" || (screen==="dispatch" && !state.assignment);
   const selected:MainTab = bottom.some(x=>x.id===screen) ? screen as MainTab :
     screen==="comms"||screen==="vehicle"||screen==="navigation"||screen==="safety" ? "home" : "dispatch";
   return <div className="flex h-full min-h-0 flex-col overflow-hidden bg-[#F5F6F8] text-[#152438]" style={{fontFamily:'-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif'}}>
@@ -672,7 +673,7 @@ export default function CareNearDriver() {
       {screen==="profile" && <ProfileView go={go}/>}
       {screen==="safety" && <SafetyView go={go}/>}
     </div>
-    <nav aria-label="Driver app navigation" className="z-[550] shrink-0 border-t border-[#E6E8ED] bg-[#FAFAFC]/95 pb-[calc(var(--safe-bottom)+4px)] backdrop-blur-md">
+    {showMainTabs && <nav aria-label="Driver app navigation" className="z-[550] shrink-0 border-t border-[#E6E8ED] bg-[#FAFAFC]/95 pb-[calc(var(--safe-bottom)+4px)] backdrop-blur-md">
       <ul className="grid grid-cols-4">{bottom.map(({id,label,Icon})=><li key={id}>
         <button type="button" onClick={()=>go(id)} aria-current={selected===id?"page":undefined}
           className={"flex min-h-[61px] w-full flex-col items-center justify-center gap-1 text-[11px] font-medium transition-colors "+(selected===id?"text-[#C81F33]":"text-[#7D8795]")}>
@@ -680,6 +681,6 @@ export default function CareNearDriver() {
           {label}
         </button>
       </li>)}</ul>
-    </nav>
+    </nav>}
   </div>;
 }
