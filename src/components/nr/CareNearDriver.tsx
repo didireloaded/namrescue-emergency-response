@@ -661,8 +661,8 @@ export default function CareNearDriver() {
   const showMainTabs = screen==="home" || screen==="trips" || screen==="profile" || (screen==="dispatch" && !state.assignment);
   const selected:MainTab = bottom.some(x=>x.id===screen) ? screen as MainTab :
     screen==="comms"||screen==="vehicle"||screen==="navigation"||screen==="safety" ? "home" : "dispatch";
-  return <div className="flex h-full min-h-0 flex-col overflow-hidden bg-[#F5F6F8] text-[#152438]" style={{fontFamily:'-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif'}}>
-    <div ref={scroll} className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+  return <div className="carenear-driver flex h-full min-h-0 flex-col overflow-hidden bg-[#F5F6F8] text-[#152438]" style={{fontFamily:'-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif'}}>
+    <div ref={scroll} className="carenear-driver-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain">
       {screen==="home" && <HomeScreen go={go}/>}
       {screen==="dispatch" && <DispatchView go={go}/>}
       {screen==="navigation" && <NavigationView go={go}/>}
