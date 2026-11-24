@@ -1,11 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
-  Activity, AlertTriangle, ArrowLeft, ArrowRight, Bell, Check, CheckCheck,
+  AlertTriangle, ArrowLeft, ArrowRight, Check,
   CheckCircle2, ChevronRight, ClipboardCheck, Clock3, ExternalLink,
   HeartPulse, Hospital, Map as MapIcon, MapPin, MessageCircle, Mic,
-  Navigation, Package, Phone, Radio, ShieldAlert, ShieldCheck,
-  Siren, Truck, UserRound, Video, WifiOff, Wrench, X,
+  Navigation, Package, Radio, ShieldAlert, ShieldCheck,
+  Siren, Truck, UserRound, Video, WifiOff, X,
 } from "lucide-react";
 import { LazyMap } from "@/components/nr/LazyMap";
 import { useConnectivity } from "@/lib/connectivity";
@@ -22,13 +22,6 @@ type TripSection = "incident" | "patient" | "handover";
 const HERO_AMBULANCE = "https://images.unsplash.com/photo-1642438114426-bad6b9ce05da?auto=format&fit=crop&w=1000&q=82";
 const HERO_CITY = "https://images.unsplash.com/photo-1771450092348-5f33e2cc2963?auto=format&fit=crop&w=900&q=78";
 
-const ui = {
-  ink: "#111D2C",
-  red: "#CB1D31",
-  bg: "#F5F6F8",
-  soft: "#6F7988",
-  hairline: "border-[#E7EAF0]",
-};
 const panel = "overflow-hidden rounded-[21px] border border-[#E9EBF0] bg-white";
 const small = "text-[13px] leading-[1.45] text-[#798392]";
 const actionRed = "flex min-h-[54px] w-full items-center justify-center gap-2 rounded-[16px] bg-[#C91E32] px-5 text-[15px] font-semibold text-white active:scale-[.99] disabled:opacity-45";
@@ -595,7 +588,7 @@ function SafetyView({go}:{go:(s:Screen)=>void}) {
         <button type="button" className={actionDark+" mt-4"} disabled={state.stage==="offDuty"} onClick={()=>driver.checkInSafe()}>
           <ShieldCheck className="size-5"/> Record I'm safe
         </button>
-        {state.safetyCheckins.length>0 && <p className={small+" mt-3"}>Last local check-in: {new Date(state.safetyCheckins[0]).toLocaleTimeString()}</p>}
+        {state.safetyCheckins.length>0 && <p className={small+" mt-3"}>Last local check-in: {new Date(state.safetyCheckins[0]!).toLocaleTimeString()}</p>}
       </div>
       <div className={panel+" p-4"}>
         <GroupTitle>Fatigue and rest</GroupTitle>
