@@ -267,6 +267,7 @@ function ProgressSteps({ stage }: { stage: DriverStage }) {
 }
 
 function DriverNextAction({ stage, go }: { stage: DriverStage; go: (s: Screen) => void }) {
+  if (stage === "offered") return <button type="button" className={actionRed} disabled={!driver.readyToWork()} onClick={() => driver.accept()}><Check className="size-5"/> Accept training dispatch</button>;
   if (stage === "accepted") return <button type="button" className={actionRed} disabled={Boolean(driver.get().outOfServiceReason)}
     onClick={() => { if (driver.depart()) go("navigation"); }}><Navigation className="size-5"/> Start route to pickup</button>;
   if (stage === "enRoute") return <button type="button" className={actionRed} onClick={() => go("navigation")}><Navigation className="size-5"/> Continue navigation</button>;
