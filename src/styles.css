@@ -227,3 +227,16 @@
   .device-screen :is(button, a):focus-visible { outline: 3px solid Highlight; }
   .nr-user-dot, .nr-amb, .nr-pin { border: 2px solid CanvasText; }
 }
+
+
+/* CareNear Driver iOS layout. Native-style scrolling without visible desktop scrollbars. */
+.carenear-driver-scroll { scrollbar-width: none; -ms-overflow-style: none; }
+.carenear-driver-scroll::-webkit-scrollbar { display: none; }
+.carenear-driver { -webkit-font-smoothing: antialiased; }
+@media (prefers-reduced-motion: reduce) {
+  .carenear-driver *, .carenear-driver *::before, .carenear-driver *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
