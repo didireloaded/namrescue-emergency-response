@@ -9,6 +9,7 @@ export type MapMode = "locate" | "tracking" | "driver";
 
 interface Props {
   mode: MapMode;
+  showZoomControls?: boolean;
   showLocationMarker?: boolean;
   center: LatLng;
   /** tracking: ambulance start */
@@ -24,7 +25,7 @@ interface Props {
   label: string;
 }
 
-export default function MapView({ mode, showLocationMarker = true, center, from, progress = 0, accuracy, trail, onPick, pickEnabled, recenterKey = 0, className, label }: Props) {
+export default function MapView({ mode, showZoomControls = false, showLocationMarker = true, center, from, progress = 0, accuracy, trail, onPick, pickEnabled, recenterKey = 0, className, label }: Props) {
   const el = useRef<HTMLDivElement>(null);
   const mapRef = useRef<LMap | null>(null);
   const userRef = useRef<Marker | null>(null);
@@ -46,6 +47,7 @@ export default function MapView({ mode, showLocationMarker = true, center, from,
       if (cancelled || !el.current) return;
       map = L.map(el.current, { zoomControl: false, attributionControl: true }).setView(center, mode === "locate" ? 15 : 14);
       mapRef.current = map;
+      if (showZoomControls) L.control.zoom({ position: "bottomright" }).addTo(map);
       if (mode === "tracking") {
         L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
           maxZoom: 19, attribution: "Imagery © Esri, Maxar, Earthstar Geographics",
