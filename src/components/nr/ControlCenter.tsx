@@ -52,7 +52,7 @@ export function ControlCenter({ requests, loaded, disconnected, error, pending, 
   return (
     <div className="min-h-dvh bg-[#edeff3] text-[#182238] [&_:is(a,button,input):focus-visible]:outline-2 [&_:is(a,button,input):focus-visible]:outline-offset-2 [&_:is(a,button,input):focus-visible]:outline-[#385acf]">
       <div className="mx-auto grid max-w-[1740px] gap-4 px-3 pb-6 pt-3 sm:px-5 lg:grid-cols-[175px_minmax(0,1fr)] lg:gap-5 lg:px-5 lg:pt-5 xl:grid-cols-[192px_minmax(0,1fr)]">
-        <aside className="flex flex-wrap items-center gap-3 rounded-[20px] border border-[#e3e7ee] bg-[#f7f8fa] p-3 lg:sticky lg:top-5 lg:min-h-[calc(100dvh-2.5rem)] lg:flex-col lg:items-stretch lg:justify-start lg:p-4">
+        <aside className="flex flex-wrap items-center gap-3 rounded-[20px] border border-[#e3e7ee] bg-[#f7f8fa] p-3 lg:sticky lg:top-5 lg:self-start lg:min-h-[calc(100dvh-2.5rem)] lg:flex-col lg:items-stretch lg:justify-start lg:p-4">
           <div className="flex items-center gap-2.5 lg:mb-4 lg:px-1 lg:pt-1">
             <span className="grid size-9 shrink-0 place-items-center rounded-[11px] bg-[#344fc2] text-white"><Radio className="size-5" aria-hidden /></span>
             <span className="text-lg font-bold tracking-tight">CareNear</span>
@@ -137,7 +137,7 @@ export function ControlCenter({ requests, loaded, disconnected, error, pending, 
               {selected?.status === "requested" && unit && <p className="mb-3 text-sm text-[#536176]">Unit 01 is assigned to request #{reference(unit)}.</p>}
               <div className="h-[250px] overflow-hidden rounded-[13px] border border-[#e0e6ed] bg-[#e2e8ef] sm:h-[310px] xl:h-[335px]">
                 <LazyMap key={selected?.id ?? "area"} mode="locate" center={pickup} showLocationMarker={Boolean(selected)} showZoomControls
-                  label={selected ? "Selected ambulance pickup location" : "Windhoek area map"} className="h-full w-full" />
+                  label={selected ? "Selected ambulance pickup location" : "Windhoek area map"} className="cn-control-map h-full w-full" />
               </div>
               {selected ? <div className="mt-5">
                 <h3 className="font-bold">Response timeline</h3>

@@ -199,6 +199,7 @@
 .leaflet-container { font-family: var(--font-sans); background: var(--ink-2); }
 .leaflet-control-attribution { font-size: 9px !important; background: oklch(1 0 0 / .7) !important; }
 .leaflet-control-zoom { display: none; }
+.cn-control-map .leaflet-control-zoom { display: block; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
