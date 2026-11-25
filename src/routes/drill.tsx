@@ -1,257 +1,209 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Ambulance, MapPin } from "lucide-react";
 import { LazyMap } from "@/components/nr/LazyMap";
-import { driver, DRIVER_PREVIEW_BASE, SAMPLE_DISPATCH, useDriver } from "@/lib/driver-store";
+import { WINDHOEK } from "@/lib/demo-store";
+import { DRIVER_PREVIEW_BASE } from "@/lib/driver-store";
+import type { LatLng } from "@/lib/demo-sim";
 
 type Role = "citizen" | "driver" | "dispatcher";
-type Stage = "setup" | "waiting" | "acknowledged" | "offered" | "accepted" | "enRoute" | "atScene" |
-  "transporting" | "atHospital" | "completed" | "declined" | "expired";
-interface Drill {
+type Status = "requested" | "assigned" | "en_route" | "arrived";
+interface AmbulanceRequest {
   id: string;
-  code: string | null;
-  paired: boolean;
-  manualDispatch: boolean;
-  dispatcherCode: string | null;
-  dispatcherPaired: boolean;
-  driverReady: boolean;
-  status: Stage;
-  version: number;
-  events: { status: Stage; at: number; actor?: Role | "system" }[];
+  latitude: number;
+  longitude: number;
+  status: Status;
+  requested_at: number;
+  assigned_at: number | null;
+  departed_at: number | null;
+  arrived_at: number | null;
 }
 
-const statusLabels: Record<Stage, string> = {
-  setup: "Ready to request",
-  waiting: "Waiting for training assignment",
-  acknowledged: "Dispatcher acknowledged receipt",
-  offered: "Waiting for driver acceptance",
-  accepted: "Training crew assigned",
-  enRoute: "Training crew en route",
-  atScene: "Training crew arrived",
-  transporting: "Training transport in progress",
-  atHospital: "Training crew at the destination",
-  completed: "Training exercise completed",
-  declined: "Training offer declined",
-  expired: "Training offer expired",
+const statusText: Record<Status, string> = {
+  requested: "Request received by CareNear",
+  assigned: "Ambulance assigned",
+  en_route: "Ambulance en route",
+  arrived: "Ambulance arrived",
 };
-
-const driverActions: Partial<Record<Stage, { action: string; label: string }>> = {
-  offered: { action: "accept", label: "Accept training offer" },
-  accepted: { action: "depart", label: "Start route to pickup" },
-  enRoute: { action: "arrive", label: "Confirm training scene arrival" },
-  atScene: { action: "transport", label: "Begin training transport" },
-  transporting: { action: "hospital", label: "Confirm training destination arrival" },
-  atHospital: { action: "complete", label: "Complete training handover" },
-};
-
-const primary = "min-h-12 w-full rounded-2xl bg-[#17283e] px-4 py-3 text-base font-semibold text-white disabled:opacity-50";
+const timeLabel = new Intl.DateTimeFormat("en-NA", { timeZone: "Africa/Windhoek", hour: "2-digit", minute: "2-digit" });
+const button = "min-h-12 rounded-xl bg-[#17283e] px-4 py-3 text-base font-semibold text-white disabled:opacity-45";
+const origin = "/api/control-center";
 
 export const Route = createFileRoute("/drill")({
   validateSearch: (search: Record<string, unknown>): { role: Role } => ({
     role: search["role"] === "driver" || search["role"] === "dispatcher" ? search["role"] : "citizen",
   }),
-  head: () => ({ meta: [{ title: "Shared training drill | CareNear" }] }),
-  component: DrillRoute,
+  head: () => ({ meta: [{ title: "CareNear coordination workspace" }] }),
+  component: ResponseRoute,
 });
 
-function DrillRoute() {
+function ResponseRoute() {
   const { role } = Route.useSearch();
-  return <DrillScreen key={role} role={role} />;
+  return <ResponseWorkspace key={role} role={role} />;
 }
 
-function DrillScreen({ role }: { role: Role }) {
-  const isDriver = role === "driver";
-  const isCitizen = role === "citizen";
-  const isDispatcher = role === "dispatcher";
-  const storageKey = "carenear-drill-" + role;
+function ResponseWorkspace({ role }: { role: Role }) {
+  const citizen = role === "citizen";
+  const control = role === "dispatcher";
+  const endpoint = origin + "?view=" + (control ? "control" : role);
   const [key, setKey] = useState<string | null>(null);
-  const [drill, setDrill] = useState<Drill | null>(null);
-  const [code, setCode] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [reconnecting, setReconnecting] = useState(false);
+  const [requests, setRequests] = useState<AmbulanceRequest[]>([]);
+  const [loaded, setLoaded] = useState(false);
+  const [disconnected, setDisconnected] = useState(false);
   const [error, setError] = useState("");
-  const inFlight = useRef(false);
-  const autoOfferVersion = useRef(-1);
-  const state = useDriver();
-  const ready = (state.stage === "available" || state.stage === "completed") && driver.readyToWork();
+  const [pending, setPending] = useState(false);
+  const [pickup, setPickup] = useState<LatLng>(WINDHOEK);
+  const mutation = useRef(false);
+  const revision = useRef(0);
 
   useEffect(() => {
-    setKey(sessionStorage.getItem(storageKey));
-  }, [storageKey]);
+    if (citizen) setKey(sessionStorage.getItem("carenear-request"));
+  }, [citizen]);
 
-  const update = useCallback((next: Drill) => {
-    setDrill((current) => current?.id === next.id && current.version > next.version ? current : next);
-    setReconnecting(false);
-  }, []);
-
-  const shareAvailability = isDriver && drill?.manualDispatch === true && drill.status !== "completed";
   useEffect(() => {
-    if (!key) return;
+    if (citizen && !key) return;
     const controller = new AbortController();
     let timer: ReturnType<typeof setTimeout>;
-    async function poll() {
+    const refresh = async () => {
       try {
-        const response = await fetch("/api/training", {
-          ...(shareAvailability ? {
-            method: "POST",
-            body: JSON.stringify({ action: "availability", ready }),
-          } : {}),
-          headers: { Authorization: "Bearer " + key },
+        if (mutation.current) return;
+        const observedRevision = revision.current;
+        const response = await fetch(endpoint, {
+          ...(key ? { headers: { Authorization: "Bearer " + key } } : {}),
           signal: controller.signal,
         });
-        if (controller.signal.aborted) return;
-        if (response.ok) update(await response.json() as Drill);
-        else if (response.status !== 404) setReconnecting(true);
-        else if (!inFlight.current) {
-          setDrill(null);
-          setReconnecting(false);
+        if (!response.ok) throw new Error("Request failed");
+        const result = await response.json() as { requests: AmbulanceRequest[] };
+        if (!controller.signal.aborted && !mutation.current && observedRevision === revision.current) {
+          setRequests(result.requests);
+          setLoaded(true);
+          setDisconnected(false);
         }
       } catch {
-        if (!controller.signal.aborted) setReconnecting(true);
+        if (!controller.signal.aborted) setDisconnected(true);
       } finally {
-        if (!controller.signal.aborted) timer = setTimeout(() => { void poll(); }, 2000);
+        if (!controller.signal.aborted) timer = setTimeout(() => { void refresh(); }, 2000);
       }
-    }
-    void poll();
+    };
+    void refresh();
     return () => { controller.abort(); clearTimeout(timer); };
-  }, [key, ready, shareAvailability, update]);
+  }, [citizen, endpoint, key]);
 
-  const command = useCallback(async (action: string, payload: { code?: string; ready?: boolean; version?: number; role?: Role; manualDispatch?: boolean } = {}) => {
-    if (inFlight.current) return;
-    inFlight.current = true;
-    setBusy(true);
+  async function send(action: string, id?: string) {
+    if (mutation.current) return;
+    mutation.current = true;
+    revision.current += 1;
+    setPending(true);
     setError("");
     try {
-      const token = key ?? Array.from(crypto.getRandomValues(new Uint8Array(32)),
-        (byte) => byte.toString(16).padStart(2, "0")).join("");
-      if (!key) {
-        sessionStorage.setItem(storageKey, token);
+      let token = key;
+      if (citizen && !token) {
+        token = Array.from(crypto.getRandomValues(new Uint8Array(32)),
+          (byte) => byte.toString(16).padStart(2, "0")).join("");
+        sessionStorage.setItem("carenear-request", token);
         setKey(token);
       }
-      const response = await fetch("/api/training", {
+      const response = await fetch(endpoint, {
         method: "POST",
-        headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" },
-        body: JSON.stringify({ action, ...payload }),
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: "Bearer " + token } : {}) },
+        body: JSON.stringify({ action, id, ...(citizen ? { latitude: pickup[0], longitude: pickup[1] } : {}) }),
       });
-      const result = await response.json() as Drill | { error: string };
-      if ("error" in result) setError(result.error);
-      else if (response.ok) update(result);
-      else setError("CareNear could not confirm that change. Try again.");
+      const result = await response.json() as { error?: string; request?: AmbulanceRequest; requests?: AmbulanceRequest[] };
+      if (!response.ok) setError(result.error ?? "CareNear could not confirm the change.");
+      else if (result.requests) {
+        setRequests(result.requests);
+        setLoaded(true);
+      } else if (result.request) {
+        const changed = result.request;
+        setRequests((current) => current.map((item) => item.id === changed.id ? changed : item));
+      }
     } catch {
-      setError("CareNear could not confirm that change. Check your connection and try again.");
+      setError("CareNear could not confirm the change. Check your connection and try again.");
     } finally {
-      inFlight.current = false;
-      setBusy(false);
+      setPending(false);
+      mutation.current = false;
     }
-  }, [key, storageKey, update]);
-
-  const stage = drill?.status;
-  const version = drill?.version;
-  useEffect(() => {
-    if (!isDriver || drill?.manualDispatch || !ready || busy || reconnecting || stage !== "waiting" ||
-      version === undefined || autoOfferVersion.current === version) return;
-    autoOfferVersion.current = version;
-    void command("offer", { ready, version });
-  }, [isDriver, drill?.manualDispatch, ready, busy, reconnecting, stage, version, command]);
-
-  function forget() {
-    sessionStorage.removeItem(storageKey);
-    autoOfferVersion.current = -1;
-    setKey(null);
-    setDrill(null);
-    setReconnecting(false);
-    setError("");
   }
 
-  function act(action: string) {
-    if (drill) void command(action, { version: drill.version, ready });
-  }
-
-  const next = stage ? driverActions[stage] : undefined;
-  const manual = drill?.manualDispatch || isDispatcher;
-  const canAssign = stage === "acknowledged" || stage === "declined" || stage === "expired";
-  const statusLabel = stage === "waiting" && manual ? "Waiting for dispatcher acknowledgement" : stage ? statusLabels[stage] : "";
-  const routeVisible = stage && ["accepted", "enRoute", "atScene", "transporting", "atHospital"].includes(stage);
-  const destination = stage === "transporting" || stage === "atHospital"
-    ? SAMPLE_DISPATCH.hospitalPoint : SAMPLE_DISPATCH.locationPoint;
-
+  const request = requests[0];
+  const unitBusy = requests.some(({ status }) => status === "assigned" || status === "en_route");
+  const title = control ? "Control center" : citizen ? "Request an ambulance" : "Driver assignment";
   return (
     <main className="h-full overflow-y-auto bg-[#f5f6f8] px-5 pb-safe pt-safe text-[#17283e]">
-      <header className="flex min-h-12 items-center justify-between py-2">
-        <Link to={isDriver ? "/driver" : "/"} className="flex min-h-11 items-center font-semibold underline underline-offset-4">
-          {isDriver ? "Driver app" : isDispatcher ? "CareNear" : "Citizen app"}
-        </Link>
-        <span className="text-sm font-semibold text-[#8c301c]">{manual ? "Private staging" : "Training only"}</span>
+      <header className="flex min-h-12 flex-wrap items-center justify-between gap-2 py-2">
+        <Link to={role === "driver" ? "/driver" : "/"} className="min-h-11 content-center font-semibold underline underline-offset-4">CareNear</Link>
+        <span className="text-sm font-medium text-[#526277]">Private workspace</span>
       </header>
-      <h1 className="mt-4 text-[30px] font-bold leading-tight tracking-tight">{isDispatcher ? "Dispatch console" : "Shared training drill"}</h1>
-      <p className="mt-2 text-base text-[#47566a]">{isDispatcher
-        ? "Acknowledge the request, assign an available unit, and follow its response."
-        : "Practice a dispatch handoff together using a fictional Windhoek incident."}</p>
-      {reconnecting && <p role="status" className="mt-4 rounded-xl bg-[#ffefcf] p-3">Reconnecting. Showing the last confirmed status.</p>}
-      {!drill && <section className="mt-6">
-        {!isCitizen ? <form onSubmit={(event) => { event.preventDefault(); void command("join", { code, role }); }}>
-          <label htmlFor="drill-code" className="block font-semibold">{isDispatcher ? "Dispatcher pairing code" : "Pairing code from the Citizen app"}</label>
-          <input id="drill-code" autoCapitalize="characters" autoComplete="off" spellCheck={false} required
-            value={code} onChange={(event) => setCode(event.target.value.toUpperCase().replace(/[^A-F0-9]/g, "").slice(0, 12))}
-            className="mt-2 min-h-12 w-full rounded-xl border border-[#aab5c2] bg-white px-4 font-mono text-base" />
-          <button className={primary + " mt-3"} disabled={busy || code.length !== 12}>{isDispatcher ? "Open staging incident" : "Join training drill"}</button>
-        </form> : <>
-          <button className={primary} disabled={busy} onClick={() => { void command("create", { manualDispatch: true }); }}>Start dispatch exercise</button>
-          <p className="mt-2 text-sm text-[#47566a]">Pairs a human dispatcher and driver. No emergency service is contacted.</p>
-          <button className="mt-3 min-h-11 font-semibold underline" disabled={busy} onClick={() => { void command("create"); }}>Start shared drill without a dispatcher</button>
-        </>}
+      <h1 className="mt-4 text-[30px] font-bold leading-tight tracking-tight">{title}</h1>
+      {disconnected && <p role="status" className="mt-4 rounded-xl bg-[#ffefcf] p-3">Connection interrupted. Showing the last confirmed status.</p>}
+      {error && <p role="alert" className="mt-4 text-base font-semibold text-[#942437]">{error}</p>}
+      {citizen && !request && (!key || loaded) && <section className="mt-5">
+        <p className="mb-3 text-base">Confirm the Windhoek pickup point or tap the map to move it.</p>
+        <div className="h-52 overflow-hidden rounded-2xl bg-[#dbe2e9]">
+          <LazyMap mode="locate" center={pickup} pickEnabled onPick={setPickup}
+            label="Pickup location map" className="h-full w-full" />
+        </div>
+        <p className="my-4 text-sm text-[#526277]">This workspace coordinates a test unit. For a real emergency, call emergency services directly.</p>
+        <button className={button + " w-full bg-[#b91e34]"} disabled={pending || disconnected}
+          onClick={() => { void send("request"); }}>Send ambulance request</button>
       </section>}
-      {drill && <section className="mt-6">
-        <p className="text-sm font-semibold text-[#526277]">Drill {drill.id.slice(0, 8).toUpperCase()}</p>
-        <h2 role="status" className="mt-1 text-xl font-bold">
-          {isDriver && stage === "offered" ? "Incoming training offer" : statusLabel}
-        </h2>
-        {(drill.code || drill.dispatcherCode) && <div className="mt-3 space-y-3 rounded-2xl border border-[#cbd4de] bg-white p-4">
-          <p className="text-sm text-[#47566a]">Share each code with the person playing that role. Codes expire after 15 minutes.</p>
-          {drill.code && <div><p className="text-sm font-semibold">Driver pairing code</p>
-            <p className="mt-1 break-all font-mono text-xl font-bold tracking-wider">{drill.code}</p></div>}
-          {drill.dispatcherCode && <div><Link to="/drill" search={{ role: "dispatcher" }} className="text-sm font-semibold underline">Open dispatch console</Link>
-            <p className="mt-1 text-sm font-semibold">Dispatcher pairing code</p>
-            <p className="mt-1 break-all font-mono text-xl font-bold tracking-wider">{drill.dispatcherCode}</p></div>}
-        </div>}
-        {isCitizen && drill.paired && <p className="mt-2 text-sm text-[#47566a]">Training driver paired.</p>}
-        {isCitizen && manual && drill.dispatcherPaired && <p className="mt-1 text-sm text-[#47566a]">Dispatcher paired.</p>}
-        {isCitizen && ((!drill.paired && !drill.code) || (manual && !drill.dispatcherPaired && !drill.dispatcherCode)) &&
-          <p className="mt-2 text-sm">A pairing code expired. Leave this drill and start a new one.</p>}
-        {isDispatcher && <dl className="mt-4 space-y-3 rounded-xl bg-white p-4 text-sm">
-          <div><dt className="font-semibold">Scenario</dt><dd>Road accident · fictional Windhoek incident</dd></div>
-          <div><dt className="font-semibold">Staging unit</dt>
-            <dd>{drill.paired ? "CN-TRAIN-01 · " + (drill.driverReady ? "Available" : "Driver unavailable") : "Waiting for a paired driver"}</dd></div>
-        </dl>}
-        {isDispatcher && stage === "waiting" && <button className={primary + " mt-4"} disabled={busy || reconnecting} onClick={() => act("acknowledge")}>Acknowledge request</button>}
-        {isDispatcher && canAssign && <button className={primary + " mt-4"} disabled={busy || reconnecting || !drill.driverReady}
-          onClick={() => act("assign")}>{stage === "acknowledged" ? "Assign CN-TRAIN-01" : "Reassign CN-TRAIN-01"}</button>}
-        {routeVisible && <div className="mt-4 h-48 overflow-hidden rounded-xl bg-[#dbe2e9]">
-          <LazyMap key={destination.join(",")} mode="driver" center={destination} from={DRIVER_PREVIEW_BASE}
-            className="h-full w-full" label="Fictional training route preview" />
-        </div>}
-        {isCitizen && stage === "setup" && <button className={primary + " mt-4"} disabled={busy || reconnecting} onClick={() => act("request")}>Submit practice SOS</button>}
-        {isCitizen && !manual && (stage === "declined" || stage === "expired") && <button className={primary + " mt-4"} disabled={busy || reconnecting} onClick={() => act("retry")}>Request another training offer</button>}
-        {isDriver && !ready && (stage === "setup" || stage === "waiting" || stage === "acknowledged" || stage === "offered") &&
-          <p className="mt-3 text-base"><Link className="font-semibold underline" to="/driver">Complete vehicle checks and start a training shift</Link> to receive or accept an offer.</p>}
-        {isDriver && !manual && ready && stage === "waiting" && error && <button className={primary + " mt-4"} disabled={busy || reconnecting} onClick={() => act("offer")}>Retry training offer</button>}
-        {isDriver && next && <button className={primary + " mt-4"} disabled={busy || reconnecting ||
-          (stage === "offered" && !ready) ||
-          ((stage === "accepted" || stage === "atScene") && Boolean(state.outOfServiceReason))}
-          onClick={() => act(next.action)}>{next.label}</button>}
-        {isDriver && stage === "offered" && <button className="mt-2 min-h-11 w-full font-semibold text-[#8c301c]" disabled={busy || reconnecting} onClick={() => act("decline")}>Decline training offer</button>}
-        {drill.events.length > 0 && <div className="mt-6">
-          <h2 className="font-bold">Drill history</h2>
-          <ol className="mt-2 divide-y divide-[#d9e0e8] rounded-xl bg-white px-3">
-            {drill.events.map((event, index) => <li key={index} className="flex flex-wrap justify-between gap-1 py-3 text-sm">
-              <span>{manual && event.status === "waiting" ? "Request submitted" : statusLabels[event.status]}
-                {manual && event.actor && <small className="block capitalize text-[#526277]">{event.actor}</small>}</span>
-              <time dateTime={new Date(event.at).toISOString()}>{new Date(event.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</time>
-            </li>)}
-          </ol>
-        </div>}
-        <button className="mt-4 min-h-11 text-sm font-semibold underline" disabled={busy} onClick={forget}>Leave this drill on this device</button>
+      {citizen && request && <section className="mt-5">
+        <p role="status" className="text-xl font-bold">{statusText[request.status]}</p>
+        <p className="mb-4 mt-2 text-sm text-[#526277]">Request {request.id.slice(0, 8).toUpperCase()}</p>
+        <RequestTimes request={request} />
+        {request.status === "arrived" && <button className={button + " mt-4"} onClick={() => {
+          sessionStorage.removeItem("carenear-request");
+          setKey(null);
+          setRequests([]);
+          setLoaded(false);
+          setError("");
+        }}>Start a new request</button>}
       </section>}
-      {error && <p role="alert" className="mt-3 text-sm font-semibold text-[#8c301c]">{error}</p>}
+      {control && loaded && <section className="mt-5">
+        <p className="mb-3 flex items-center gap-2 font-semibold"><Ambulance className="size-5" /> Unit 01 · {unitBusy ? "On assignment" : "Available"}</p>
+        {requests.length === 0 && <p className="text-[#526277]">New ambulance requests will appear here.</p>}
+        <ul className="divide-y divide-[#d7dee7] rounded-2xl bg-white px-4">
+          {requests.map((item) => <li key={item.id} className="py-4">
+            <p className="text-sm text-[#526277]">Request {item.id.slice(0, 8).toUpperCase()} · {timeLabel.format(item.requested_at)}</p>
+            <p className="mt-1 font-bold">{item.status === "requested" ? "New ambulance request" : statusText[item.status]}</p>
+            <p className="mt-1 text-sm tabular-nums">{item.latitude.toFixed(4)}, {item.longitude.toFixed(4)}</p>
+            {item.status === "requested" && <button className={button + " mt-3 w-full"}
+              disabled={unitBusy || pending || disconnected} onClick={() => { void send("assign", item.id); }}>Assign Unit 01</button>}
+          </li>)}
+        </ul>
+      </section>}
+      {role === "driver" && loaded && (!request ? <p className="mt-5 text-[#526277]">Waiting for an assignment from the control center.</p> :
+        <section className="mt-5">
+          <p role="status" className="text-xl font-bold">{request.status === "assigned" ? "New pickup assignment" : statusText[request.status]}</p>
+          <p className="mb-3 mt-1 flex items-center gap-2 text-sm"><MapPin className="size-4" />
+            {request.latitude.toFixed(4)}, {request.longitude.toFixed(4)}</p>
+          <div className="h-60 overflow-hidden rounded-2xl bg-[#dbe2e9]">
+            <LazyMap key={request.id} mode="driver" center={[request.latitude, request.longitude]} from={DRIVER_PREVIEW_BASE}
+              label="Route to the pickup location" className="h-full w-full" />
+          </div>
+          <button className={button + " mt-4 w-full"} disabled={pending || disconnected || request.status === "arrived"}
+            onClick={() => { void send(request.status === "assigned" ? "depart" : "arrive", request.id); }}>
+            {request.status === "assigned" ? "Start route to pickup" : request.status === "arrived" ? "Arrival confirmed" : "Confirm arrival"}
+          </button>
+          {request.status === "en_route" && <a className="mt-2 flex min-h-11 items-center justify-center font-semibold underline"
+            href={"https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(request.latitude + "," + request.longitude)}
+            target="_blank" rel="noreferrer">Open directions</a>}
+        </section>)}
+      {!loaded && (!citizen || key) && <p role="status" className="mt-5">Checking for requests…</p>}
     </main>
   );
+}
+
+function RequestTimes({ request }: { request: AmbulanceRequest }) {
+  const milestones = [
+    ["Requested", request.requested_at],
+    ["Assigned", request.assigned_at],
+    ["En route", request.departed_at],
+    ["Arrived", request.arrived_at],
+  ] as const;
+  return <dl className="divide-y divide-[#d7dee7] rounded-xl bg-white px-4">
+    {milestones.map(([label, at]) => at !== null && <div key={label} className="flex justify-between gap-2 py-3">
+      <dt>{label}</dt><dd>{timeLabel.format(at)}</dd>
+    </div>)}
+  </dl>;
 }

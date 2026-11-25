@@ -15,6 +15,13 @@
       "when": 1795570200000,
       "tag": "0001_staged_dispatch",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1795571400000,
+      "tag": "0002_control_center",
+      "breakpoints": true
     }
   ]
 }

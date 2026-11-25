@@ -9,3 +9,4 @@ await cp(".output/server", "dist/server", {
 await cp(".output/public", "dist/client", { recursive: true });
 await cp("scripts/sites-worker.mjs", "dist/server/index.js");
 await cp("scripts/training-api.mjs", "dist/server/training-api.mjs");
+await cp("scripts/control-center-api.mjs", "dist/server/control-center-api.mjs");

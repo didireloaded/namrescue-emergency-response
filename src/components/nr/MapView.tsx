@@ -73,7 +73,10 @@ export default function MapView({ mode, center, from, progress = 0, accuracy, tr
         L.polyline(path, { color: "#0b1220", weight: 9, opacity: 0.55 }).addTo(map);
         lineRef.current = L.polyline(path, { color: "#ffffff", weight: 5, opacity: 0.95, lineCap: "round" }).addTo(map);
         ambRef.current = L.marker(pointAlong(path, progressRef.current), { icon: L.divIcon({ className: "", html: `<div class="nr-amb">${AMB_SVG}</div>`, iconSize: [38, 38], iconAnchor: [19, 19] }), title: mode === "driver" ? "Illustrative unit position" : "Demo ambulance" }).addTo(map);
-        map.fitBounds(L.latLngBounds(path), { paddingTopLeft: [40, 90], paddingBottomRight: [40, 330] });
+        const compact = map.getSize().y < 400;
+        map.fitBounds(L.latLngBounds(path), compact
+          ? { padding: [24, 24] }
+          : { paddingTopLeft: [40, 90], paddingBottomRight: [40, 330] });
       }
     })();
     return () => { cancelled = true; map?.remove(); mapRef.current = null; trailRef.current = null; };

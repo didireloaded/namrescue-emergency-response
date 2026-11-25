@@ -140,8 +140,9 @@ function RootComponent() {
 }
 
 const WORKSPACES = [
-  { to: "/", label: "Citizen app", description: "Practice requesting and tracking assistance." },
-  { to: "/driver", label: "Driver app", description: "Practice shift checks and dispatch workflows." },
+  { to: "/", label: "Citizen app", description: "Request an ambulance and follow its progress." },
+  { to: "/driver", label: "Driver app", description: "Open an assignment and head to pickup." },
+  { to: "/drill", search: { role: "dispatcher" as const }, label: "Control center", description: "Review requests and assign the unit." },
 ] as const;
 
 const LIGHT_ROUTES = ["/summary", "/history", "/profile", "/medical", "/safety", "/driver", "/drill"];
@@ -152,11 +153,11 @@ function PhoneFrame({ children }: { children: ReactNode }) {
     <div className="min-h-dvh md:flex md:items-center md:justify-center md:gap-14 md:py-8">
       <aside className="hidden w-56 md:block" aria-label="Training workspaces">
         <p className="text-lg font-semibold text-on-photo">CareNear</p>
-        <p className="mb-6 text-sm text-on-photo-muted">Training simulation</p>
+        <p className="mb-6 text-sm text-on-photo-muted">Private workspace</p>
         <ul className="space-y-1">
           {WORKSPACES.map((s) => (
             <li key={s.to}>
-              <Link to={s.to} className={"block rounded-xl px-3 py-3 text-sm transition-colors " + ((path === "/driver") === (s.to === "/driver") ? "bg-ink-2 text-on-photo" : "text-muted-foreground hover:text-on-photo")}>
+              <Link to={s.to} search={"search" in s ? s.search : undefined} className={"block rounded-xl px-3 py-3 text-sm transition-colors " + (path === s.to ? "bg-ink-2 text-on-photo" : "text-muted-foreground hover:text-on-photo")}>
                 <span className="block font-semibold">{s.label}</span>
                 <span className="mt-1 block text-on-photo-muted">{s.description}</span>
               </Link>

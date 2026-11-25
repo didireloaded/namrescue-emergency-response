@@ -1,6 +1,6 @@
 # CareNear on ChatGPT Sites
 
-CareNear is a private browser-based training application for Namibia. Use fictional names, sample incidents and map pins in public areas. Citizen and Driver have separate navigation and session stores. The original solo simulations run independently. The Shared training drill links a Citizen request to a paired Driver through Sites D1.
+CareNear is a private browser-based training application for Namibia. Use fictional names, sample incidents and map pins in public areas. Citizen and Driver have separate navigation and session stores. The original solo simulations run independently. The private control center links Citizen requests and Driver assignments through Sites D1.
 
 ## Source and design
 
@@ -20,23 +20,14 @@ The two Driver photographs are locally served copies of the licensed Unsplash as
 
 Solo application state is held in browser memory. The shared drill stores only fictional workflow state, versioned status events, pairing metadata and hashed participant keys in Sites D1. The per-role key lives in browser session storage. Public map/geocoding/routing services receive tile requests, typed place searches or coordinates as applicable. Opening external maps or a device sharing action can hand off data to that provider. The private Sites access gate protects the preview and does not establish operational roles.
 
-## Run a shared drill
+## Run the control center flow
 
-1. On the Citizen home, open **Shared training drill**, start a drill and share its pairing code with the Driver.
-2. On the Driver workspace, complete Vehicle Check and start a training shift. Open **Shared training drill** and enter the code.
-3. On the Citizen screen, select **Submit practice SOS**. The paired, shift-ready Driver receives a training offer. Have the Driver accept, start the route, confirm arrival, begin transport, confirm the destination and complete the training handover.
-4. Watch the Citizen screen update automatically. Both screens show the confirmed drill timeline. The Driver can return to it through **Trips → Shared drill history**.
+1. Open the private Citizen app and choose **SOS**. Confirm the Windhoek pickup point, then select **Send ambulance request**.
+2. Open **Control center** in a separate tab. Select **Assign Unit 01** from the new request in the queue.
+3. Open **Driver → Assigned requests** in a third tab. Select **Start route to pickup**. Both other screens update to **Ambulance en route**.
+4. Use **Confirm arrival** to complete the pickup flow and free the unit for another request.
 
-The private Site requires authorized Sites access on both devices. The code pairs roles within the exercise and does not grant Site access. Codes expire after 15 minutes, offers after two minutes and drills after four hours. Expired records become inaccessible and are removed in bounded batches when new drills start. A declined or expired offer can be retried by the Citizen. A drill uses one fixed fictional scenario and sends no personal information, device coordinates, messages or alerts to an emergency operator. Training readiness is self-attested by the Driver client from its local checklist and shift status.
-
-## Run an operator-neutral dispatch exercise
-
-1. The Citizen opens **Shared training drill** and selects **Start dispatch exercise**. Share the separate Dispatcher and Driver pairing codes with the people playing those roles.
-2. The Dispatcher opens **Dispatch console** and enters the Dispatcher code to open the incident. The Driver completes vehicle checks, starts a training shift and joins with the Driver code.
-3. The Citizen submits the practice SOS. The Dispatcher acknowledges it, then assigns the available staging unit. A Driver offer cannot appear until those actions are confirmed by the backend.
-4. The Driver can accept or decline the offer. If the offer is declined or expires, the Dispatcher can reassign the unit once it is available again. After acceptance, Driver milestones update both other screens. All three roles can review the timestamped event history.
-
-This private staging console opens one incident per pairing and uses one fictional unit and location. Sign-in to the private Sites deployment and possession of the role-specific pairing code are both required. The code restricts authority within a drill. It does not establish an operator-verified identity. Unit availability is based on the local training checklist and a short heartbeat. Public emergency intake, verified staff and fleet enrolment, operator alerting, and live service escalation require a staffed operator and separate launch approval.
+All three views use one private Sites workspace and shared D1 records. The Citizen browser retains its own request access in session storage. The control center sees the queue and latest arrivals. One test unit can have one active assignment at a time. The workspace relies on owner-private Sites access for this walkthrough. Staff identity, independent role permissions, live fleet tracking and public intake require a separate rollout with an approved operator. Use a public landmark for pickup testing.
 
 ## Production integration design
 

@@ -121,7 +121,7 @@ function HomeScreen({ go }: { go: (screen: Screen) => void }) {
     <div className="space-y-6 px-5 pb-9 pt-6">
       <div>
         <Link to="/drill" search={{ role: "driver" }} className={actionDark + " mb-4"}>
-          <Radio className="size-5" /> Shared training drill
+          <Radio className="size-5" /> Assigned requests
         </Link>
         <GroupTitle>Workspace</GroupTitle>
         <div className="grid grid-cols-2 gap-3">
@@ -553,7 +553,7 @@ function TripsView({go}:{go:(s:Screen)=>void}) {
     <PageHeader title="Trip history" onBack={()=>go("home")} trailing={<Clock3 className="size-5 text-[#63778E]"/>}/>
     <ScreenTitle eyebrow="Training session" title="Your trips" detail="Timeline and logistics from this browser session only."/>
     <Link to="/drill" search={{ role: "driver" }} className={actionLight + " mb-4"}>
-      Shared drill history
+      Open assigned request
     </Link>
     <div className="space-y-5 px-5">
       <div className="rounded-[22px] bg-[#152538] px-5 py-5 text-white">
