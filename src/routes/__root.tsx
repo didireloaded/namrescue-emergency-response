@@ -139,16 +139,9 @@ function RootComponent() {
   );
 }
 
-const SCREENS = [
-  { to: "/", n: "01", label: "Home / SOS" },
-  { to: "/request", n: "02", label: "Confirm location" },
-  { to: "/tracking", n: "03", label: "Tracking" },
-  { to: "/team", n: "04", label: "Response team" },
-  { to: "/arrived", n: "05", label: "Arrived" },
-  { to: "/medical", n: "06", label: "Medical ID" },
-  { to: "/profile", n: "07", label: "Citizen profile" },
-  { to: "/safety", n: "08", label: "Safety tools" },
-  { to: "/driver", n: "09", label: "Driver workspace" },
+const WORKSPACES = [
+  { to: "/", label: "Citizen app", description: "Practice requesting and tracking assistance." },
+  { to: "/driver", label: "Driver app", description: "Practice shift checks and dispatch workflows." },
 ] as const;
 
 const LIGHT_ROUTES = ["/summary", "/history", "/profile", "/medical", "/safety", "/driver"];
@@ -157,14 +150,15 @@ function PhoneFrame({ children }: { children: ReactNode }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
   return (
     <div className="min-h-dvh md:flex md:items-center md:justify-center md:gap-14 md:py-8">
-      <aside className="hidden w-56 md:block" aria-label="Screen picker">
-        <p className="text-[13px] font-semibold text-on-photo">CareNear</p>
-        <p className="mb-6 text-[12px] text-muted-foreground">Interactive prototype · not a live service</p>
+      <aside className="hidden w-56 md:block" aria-label="Training workspaces">
+        <p className="text-lg font-semibold text-on-photo">CareNear</p>
+        <p className="mb-6 text-sm text-on-photo-muted">Training simulation</p>
         <ul className="space-y-1">
-          {SCREENS.map((s) => (
+          {WORKSPACES.map((s) => (
             <li key={s.to}>
-              <Link to={s.to} className={"flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] transition-colors " + (path === s.to ? "bg-ink-2 text-on-photo" : "text-muted-foreground hover:text-on-photo")}>
-                <span className="tabular text-[11px] text-sos-bright">{s.n}</span>{s.label}
+              <Link to={s.to} className={"block rounded-xl px-3 py-3 text-sm transition-colors " + ((path === "/driver") === (s.to === "/driver") ? "bg-ink-2 text-on-photo" : "text-muted-foreground hover:text-on-photo")}>
+                <span className="block font-semibold">{s.label}</span>
+                <span className="mt-1 block text-on-photo-muted">{s.description}</span>
               </Link>
             </li>
           ))}

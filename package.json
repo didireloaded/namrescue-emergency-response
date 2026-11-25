@@ -11,7 +11,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "build:sites": "vite build && node scripts/prepare-sites.mjs"
   },
   "overrides": {
     "rolldown": "1.2.1",

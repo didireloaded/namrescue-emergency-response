@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Ambulance, Bell, Phone, Users, MapPin, Navigation, CarFront, ChevronDown } from "lucide-react";
 import { BottomNav, Sheet } from "@/components/nr/chrome";
@@ -29,12 +29,12 @@ function Home() {
   const [callOpen, setCallOpen] = useState(false);
   const [areaOpen, setAreaOpen] = useState(false);
   const [sheet, setSheet] = useState<null | "other" | "notifications">(null);
-  const openEmergency = () => {
+  const openEmergency = (): Promise<void> => {
     if (incident.status === "arrived") return nav({ to: "/arrived" });
     if (incident.status === "assigned") return nav({ to: "/tracking" });
     if (incident.status === "received") return nav({ to: "/request" });
     demo.start(false);
-    nav({ to: "/request" });
+    return nav({ to: "/request" });
   };
   return (
     <div className="relative flex h-full flex-col bg-ink">
@@ -43,7 +43,7 @@ function Home() {
       <header className="relative z-10 flex items-start justify-between px-[26px] pt-safe">
         <div className="mt-3">
           <p className="text-[20px] font-bold tracking-tight text-on-photo"><span className="text-sos-bright">+</span> CareNear</p>
-          <p className="text-[12px] text-on-photo-muted">Emergency Medical Services</p>
+          <p className="text-[13px] text-on-photo-muted">Emergency response training</p>
           <button onClick={() => setAreaOpen(true)} className="mt-4 flex min-h-10 items-center gap-1.5 rounded-full border border-white/25 bg-ink/60 px-3 text-left text-[12px] font-semibold text-white">
             <MapPin className="size-3.5 text-sos-bright" /> {areaLabel(profile.homeArea)} <ChevronDown className="size-3" />
           </button>
@@ -51,7 +51,10 @@ function Home() {
             <span aria-live="polite">Offline detected · tap to call</span>
           </button>}
         </div>
-        <button aria-label="Notifications" onClick={() => setSheet("notifications")} className="press mt-2 grid size-11 place-items-center rounded-full border border-hairline bg-ink/50 text-on-photo"><Bell className="size-5" /></button>
+        <div className="mt-2 flex items-center gap-2">
+          <Link to="/driver" className="grid min-h-11 place-items-center rounded-full border border-hairline bg-ink/80 px-3 text-[14px] font-semibold text-on-photo">Driver</Link>
+          <button aria-label="Notifications" onClick={() => setSheet("notifications")} className="press grid size-11 place-items-center rounded-full border border-hairline bg-ink/50 text-on-photo"><Bell className="size-5" /></button>
+        </div>
       </header>
       <h1 className="animate-rise relative z-10 mt-auto px-[26px] text-[42px] font-bold leading-[1.03] tracking-tight text-on-photo">Get<br />emergency<br />medical help.</h1>
       <div className="relative z-10 space-y-3 px-5 pb-4 pt-6">

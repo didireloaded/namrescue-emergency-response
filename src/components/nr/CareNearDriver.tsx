@@ -8,6 +8,7 @@ import {
   Siren, Truck, UserRound, Video, WifiOff, X,
 } from "lucide-react";
 import { LazyMap } from "@/components/nr/LazyMap";
+import { IMG } from "@/lib/images";
 import { useConnectivity } from "@/lib/connectivity";
 import {
   driver, useDriver, stageLabel, VEHICLE_ITEMS, SUPPLY_KEYS,
@@ -19,8 +20,8 @@ type Screen = "home" | "dispatch" | "navigation" | "details" | "vehicle" |
   "comms" | "trips" | "profile" | "safety";
 type MainTab = "home" | "dispatch" | "trips" | "profile";
 type TripSection = "incident" | "patient" | "handover";
-const HERO_AMBULANCE = "https://images.unsplash.com/photo-1642438114426-bad6b9ce05da?auto=format&fit=crop&w=1000&q=82";
-const HERO_CITY = "https://images.unsplash.com/photo-1771450092348-5f33e2cc2963?auto=format&fit=crop&w=900&q=78";
+const HERO_AMBULANCE = IMG.driverAmbulance;
+const HERO_CITY = IMG.driverCity;
 
 const panel = "overflow-hidden rounded-[21px] border border-[#E9EBF0] bg-white";
 const small = "text-[13px] leading-[1.45] text-[#798392]";
@@ -274,7 +275,7 @@ function DriverNextAction({ stage, go }: { stage: DriverStage; go: (s: Screen) =
   if (stage === "atScene") return <button type="button" className={actionRed} disabled={Boolean(driver.get().outOfServiceReason)}
     onClick={() => { if (driver.beginTransport()) go("navigation"); }}><Truck className="size-5"/> Begin transport</button>;
   if (stage === "transporting") return <button type="button" className={actionRed} onClick={() => go("navigation")}><Navigation className="size-5"/> Continue to hospital</button>;
-  if (stage === "atHospital") return <button type="button" className={actionRed} onClick={() => driver.closeTrip()}><CheckCircle2 className="size-5"/> Complete logistics handover</button>;
+  if (stage === "atHospital") return <button type="button" className={actionRed} onClick={() => driver.closeTrip()}><CheckCircle2 className="size-5"/> Complete training handover</button>;
   if (stage === "completed") return <button type="button" className={actionDark} disabled={!driver.readyToWork()}
     onClick={() => { if(driver.readyForNext()) go("home"); }}><CheckCircle2 className="size-5"/> Ready for next assignment</button>;
   return null;
@@ -349,7 +350,7 @@ function NavigationView({ go }: { go: (s: Screen) => void }) {
   const label = a ? (hospital ? a.hospital : a.location) : "No active destination";
   return <div className="relative flex h-full min-h-[600px] flex-col overflow-hidden bg-[#E0E5E9]">
     <div className="absolute inset-0 z-0">
-      {a ? <LazyMap mode="driver" center={destination} from={DRIVER_PREVIEW_BASE} className="h-full w-full"
+      {a ? <LazyMap key={destination.join(",")} mode="driver" center={destination} from={DRIVER_PREVIEW_BASE} className="h-full w-full"
           label="Illustrative training route with no live location or ETA" /> :
         <div className="flex h-full flex-col items-center justify-center gap-2 bg-[#E4E9E8] text-[#748295]"><MapIcon className="size-10"/><p>No active training route</p></div>}
     </div>
@@ -386,7 +387,7 @@ function NavigationView({ go }: { go: (s: Screen) => void }) {
         {state.stage==="enRoute" && <button type="button" onClick={()=>driver.sceneArrival()} className={actionRed+" mt-4"}><MapPin className="size-5"/> Confirm scene arrival</button>}
         {state.stage==="atScene" && <button type="button" onClick={()=>driver.beginTransport()} disabled={Boolean(state.outOfServiceReason)} className={actionRed+" mt-4"}><Truck className="size-5"/> Begin transport to hospital</button>}
         {state.stage==="transporting" && <button type="button" onClick={()=>driver.hospitalArrival()} className={actionRed+" mt-4"}><Hospital className="size-5"/> Confirm hospital arrival</button>}
-        {state.stage==="atHospital" && <button type="button" onClick={()=>{if(driver.closeTrip())go("details");}} className={actionRed+" mt-4"}><CheckCircle2 className="size-5"/> Complete logistics handover</button>}
+        {state.stage==="atHospital" && <button type="button" onClick={()=>{if(driver.closeTrip())go("details");}} className={actionRed+" mt-4"}><CheckCircle2 className="size-5"/> Complete training handover</button>}
         {!a && <button type="button" onClick={()=>go("dispatch")} className={actionDark+" mt-4"}>Go to Dispatch <ArrowRight className="size-5"/></button>}
       </div>
     </div>

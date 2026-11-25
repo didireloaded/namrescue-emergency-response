@@ -211,7 +211,9 @@ export const driver = {
   addMessage: (message: string) => {
     const content = message.trim().slice(0, 400);
     if (!content || state.stage === "offDuty") return false;
-    set({ messages: [{ id: String(Date.now()) + "-" + state.messages.length, at: Date.now(), from: "driver", text: content, delivery: "local-only" }, ...state.messages].slice(0, 60) });
+    const at = Date.now();
+    const entry: DriverMessage = { id: at + "-" + state.messages.length, at, from: "driver", text: content, delivery: "local-only" };
+    set({ messages: [entry, ...state.messages].slice(0, 60) });
     return true;
   },
   updateHandover: (note: string) => {

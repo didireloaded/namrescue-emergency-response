@@ -30,7 +30,7 @@ describe("user-directed SMS location sharing", () => {
     const msg = composeLocationText(point, NOW)!;
     const uri = smsComposeUri("+264 81 123 4567", msg);
     expect(uri).toMatch(/^sms:\+264811234567\?body=/);
-    expect(decodeURIComponent(uri!.split("?body=")[1])).toBe(msg);
+    expect(decodeURIComponent(uri?.split("?body=")[1] ?? "")).toBe(msg);
     expect(smsComposeUri("invalid", msg)).toBeNull();
     expect(smsComposeUri("+264811234567", "")).toBeNull();
   });
