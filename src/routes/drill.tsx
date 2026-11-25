@@ -1,14 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { Ambulance, MapPin } from "lucide-react";
+import { MapPin } from "lucide-react";
+import { ControlCenter } from "@/components/nr/ControlCenter";
 import { LazyMap } from "@/components/nr/LazyMap";
 import { WINDHOEK } from "@/lib/demo-store";
 import { DRIVER_PREVIEW_BASE } from "@/lib/driver-store";
 import type { LatLng } from "@/lib/demo-sim";
 
 type Role = "citizen" | "driver" | "dispatcher";
-type Status = "requested" | "assigned" | "en_route" | "arrived";
-interface AmbulanceRequest {
+export type Status = "requested" | "assigned" | "en_route" | "arrived";
+export interface AmbulanceRequest {
   id: string;
   latitude: number;
   longitude: number;
@@ -126,8 +127,9 @@ function ResponseWorkspace({ role }: { role: Role }) {
   }
 
   const request = requests[0];
-  const unitBusy = requests.some(({ status }) => status === "assigned" || status === "en_route");
-  const title = control ? "Control center" : citizen ? "Request an ambulance" : "Driver assignment";
+  if (control) return <ControlCenter requests={requests} loaded={loaded} disconnected={disconnected}
+    error={error} pending={pending} assign={(id) => { void send("assign", id); }} />;
+  const title = citizen ? "Request an ambulance" : "Driver assignment";
   return (
     <main className="h-full overflow-y-auto bg-[#f5f6f8] px-5 pb-safe pt-safe text-[#17283e]">
       <header className="flex min-h-12 flex-wrap items-center justify-between gap-2 py-2">
@@ -158,19 +160,6 @@ function ResponseWorkspace({ role }: { role: Role }) {
           setLoaded(false);
           setError("");
         }}>Start a new request</button>}
-      </section>}
-      {control && loaded && <section className="mt-5">
-        <p className="mb-3 flex items-center gap-2 font-semibold"><Ambulance className="size-5" /> Unit 01 · {unitBusy ? "On assignment" : "Available"}</p>
-        {requests.length === 0 && <p className="text-[#526277]">New ambulance requests will appear here.</p>}
-        <ul className="divide-y divide-[#d7dee7] rounded-2xl bg-white px-4">
-          {requests.map((item) => <li key={item.id} className="py-4">
-            <p className="text-sm text-[#526277]">Request {item.id.slice(0, 8).toUpperCase()} · {timeLabel.format(item.requested_at)}</p>
-            <p className="mt-1 font-bold">{item.status === "requested" ? "New ambulance request" : statusText[item.status]}</p>
-            <p className="mt-1 text-sm tabular-nums">{item.latitude.toFixed(4)}, {item.longitude.toFixed(4)}</p>
-            {item.status === "requested" && <button className={button + " mt-3 w-full"}
-              disabled={unitBusy || pending || disconnected} onClick={() => { void send("assign", item.id); }}>Assign Unit 01</button>}
-          </li>)}
-        </ul>
       </section>}
       {role === "driver" && loaded && (!request ? <p className="mt-5 text-[#526277]">Waiting for an assignment from the control center.</p> :
         <section className="mt-5">

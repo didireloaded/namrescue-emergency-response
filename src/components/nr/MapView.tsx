@@ -9,6 +9,7 @@ export type MapMode = "locate" | "tracking" | "driver";
 
 interface Props {
   mode: MapMode;
+  showLocationMarker?: boolean;
   center: LatLng;
   /** tracking: ambulance start */
   from?: LatLng;
@@ -23,7 +24,7 @@ interface Props {
   label: string;
 }
 
-export default function MapView({ mode, center, from, progress = 0, accuracy, trail, onPick, pickEnabled, recenterKey = 0, className, label }: Props) {
+export default function MapView({ mode, showLocationMarker = true, center, from, progress = 0, accuracy, trail, onPick, pickEnabled, recenterKey = 0, className, label }: Props) {
   const el = useRef<HTMLDivElement>(null);
   const mapRef = useRef<LMap | null>(null);
   const userRef = useRef<Marker | null>(null);
@@ -57,7 +58,7 @@ export default function MapView({ mode, center, from, progress = 0, accuracy, tr
 
       if (mode === "locate") {
         if (typeof accuracy === "number" && accuracy > 0) accuracyRef.current = L.circle(center, { radius: accuracy, color: "transparent", fillColor: "#237AD5", fillOpacity: 0.16 }).addTo(map);
-        userRef.current = L.marker(center, { icon: L.divIcon({ className: "", html: '<div class="nr-user-dot"></div>', iconSize: [18, 18], iconAnchor: [9, 9] }), keyboard: false }).addTo(map);
+        if (showLocationMarker) userRef.current = L.marker(center, { icon: L.divIcon({ className: "", html: '<div class="nr-user-dot"></div>', iconSize: [18, 18], iconAnchor: [9, 9] }), keyboard: false }).addTo(map);
         map.on("click", (e) => {
           if (pickRef.current.pickEnabled && pickRef.current.onPick) pickRef.current.onPick([e.latlng.lat, e.latlng.lng]);
         });

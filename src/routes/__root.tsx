@@ -151,8 +151,9 @@ function PhoneFrame({ children }: { children: ReactNode }) {
   const location = useRouterState({ select: (s) => s.location });
   const path = location.pathname;
   const role = new URLSearchParams(location.searchStr).get("role");
+  if (path === "/drill" && role === "dispatcher") return <>{children}</>;
   const activeWorkspace = path === "/drill"
-    ? role === "dispatcher" ? "/drill" : role === "driver" ? "/driver" : "/"
+    ? role === "driver" ? "/driver" : "/"
     : path === "/driver" ? "/driver" : "/";
   return (
     <div className="min-h-dvh md:flex md:items-center md:justify-center md:gap-14 md:py-8">
