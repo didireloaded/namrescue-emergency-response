@@ -2,6 +2,19 @@
   "version": "7",
   "dialect": "sqlite",
   "entries": [
-    { "idx": 0, "version": "6", "when": 1795568400000, "tag": "0000_shared_training", "breakpoints": true }
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1795568400000,
+      "tag": "0000_shared_training",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1795570200000,
+      "tag": "0001_staged_dispatch",
+      "breakpoints": true
+    }
   ]
 }

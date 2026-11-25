@@ -10,6 +10,7 @@ const migration = readFileSync(new URL("../drizzle/0000_shared_training.sql", im
 function setup() {
   const storage = new DatabaseSync(":memory:");
   storage.exec(migration);
+  storage.exec(readFileSync(new URL("../drizzle/0001_staged_dispatch.sql", import.meta.url), "utf8"));
   const db = {
     prepare: (sql) => ({
       bind: (...args) => ({
@@ -73,5 +74,34 @@ test("an expired or declined offer returns to waiting only on a Citizen retry", 
   const offeredAgain = await call("b", "offer", { version: retry.version, ready: true });
   assert.equal((await call("b", "decline", { version: offeredAgain.version })).status, "declined");
   assert.equal((await call("a", "retry", { version: offeredAgain.version + 1 }, "https://other.example")).status, 403);
+  storage.close();
+});
+
+test("staging separates dispatcher authority from the citizen and driver", async () => {
+  const { call, storage } = setup();
+  const citizen = await call("a", "create", { manualDispatch: true });
+  assert.equal(citizen.manualDispatch, true);
+  assert.notEqual(citizen.dispatcherCode, citizen.code);
+  assert.equal((await call("b", "join", { code: citizen.dispatcherCode })).status, 404);
+  const dispatcher = await call("c", "join", { code: citizen.dispatcherCode, role: "dispatcher" });
+  assert.equal(dispatcher.dispatcherCode, null);
+  const driver = await call("b", "join", { code: citizen.code });
+  const waiting = await call("a", "request", { version: driver.version });
+  assert.equal((await call("b", "offer", { ready: true, version: waiting.version })).status, 409);
+  assert.equal((await call("a", "acknowledge", { version: waiting.version })).status, 409);
+  assert.equal((await call("c", "assign", { version: waiting.version })).status, 409);
+  const acknowledged = await call("c", "acknowledge", { version: waiting.version });
+  assert.equal(acknowledged.status, "acknowledged");
+  assert.equal((await call("c", "assign", { version: acknowledged.version })).status, 409);
+  assert.equal((await call("b", "availability", { ready: true })).driverReady, true);
+  const offer = await call("c", "assign", { version: acknowledged.version });
+  assert.equal(offer.status, "offered");
+  assert.equal((await call("c", "accept", { version: offer.version, ready: true })).status, 409);
+  await call("b", "availability", { ready: false });
+  assert.equal((await call("b", "accept", { version: offer.version, ready: true })).status, 409);
+  await call("b", "availability", { ready: true });
+  const accepted = await call("b", "accept", { version: offer.version, ready: true });
+  assert.equal(accepted.status, "accepted");
+  assert.deepEqual(accepted.events.map(({ actor }) => actor), ["citizen", "dispatcher", "dispatcher", "driver"]);
   storage.close();
 });

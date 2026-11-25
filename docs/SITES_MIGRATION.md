@@ -29,6 +29,15 @@ Solo application state is held in browser memory. The shared drill stores only f
 
 The private Site requires authorized Sites access on both devices. The code pairs roles within the exercise and does not grant Site access. Codes expire after 15 minutes, offers after two minutes and drills after four hours. Expired records become inaccessible and are removed in bounded batches when new drills start. A declined or expired offer can be retried by the Citizen. A drill uses one fixed fictional scenario and sends no personal information, device coordinates, messages or alerts to an emergency operator. Training readiness is self-attested by the Driver client from its local checklist and shift status.
 
+## Run an operator-neutral dispatch exercise
+
+1. The Citizen opens **Shared training drill** and selects **Start dispatch exercise**. Share the separate Dispatcher and Driver pairing codes with the people playing those roles.
+2. The Dispatcher opens **Dispatch console** and enters the Dispatcher code to open the incident. The Driver completes vehicle checks, starts a training shift and joins with the Driver code.
+3. The Citizen submits the practice SOS. The Dispatcher acknowledges it, then assigns the available staging unit. A Driver offer cannot appear until those actions are confirmed by the backend.
+4. The Driver can accept or decline the offer. If the offer is declined or expires, the Dispatcher can reassign the unit once it is available again. After acceptance, Driver milestones update both other screens. All three roles can review the timestamped event history.
+
+This private staging console opens one incident per pairing and uses one fictional unit and location. Sign-in to the private Sites deployment and possession of the role-specific pairing code are both required. The code restricts authority within a drill. It does not establish an operator-verified identity. Unit availability is based on the local training checklist and a short heartbeat. Public emergency intake, verified staff and fleet enrolment, operator alerting, and live service escalation require a staffed operator and separate launch approval.
+
 ## Production integration design
 
 1. **Identity and authorization.** Use trusted server-side identity and map it to verified organization membership. Require role and resource checks for each read or command, with organization, assigned unit, dispatch region and incident scope where relevant. Give Dispatch control over assignments, Driver access to assigned logistics, Paramedic access to authorized clinical data, Fleet access to readiness and maintenance, and Administration audited membership and policy controls. A workspace link grants zero operational privileges.
