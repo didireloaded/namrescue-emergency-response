@@ -43,8 +43,8 @@ function Home() {
       <header className="relative z-10 flex items-start justify-between px-[26px] pt-safe">
         <div className="mt-3">
           <p className="text-[20px] font-bold tracking-tight text-on-photo"><span className="text-sos-bright">+</span> CareNear</p>
-          <p className="text-[13px] text-on-photo-muted">Emergency response training</p>
-          <button onClick={() => setAreaOpen(true)} className="mt-4 flex min-h-10 items-center gap-1.5 rounded-full border border-white/25 bg-ink/60 px-3 text-left text-[12px] font-semibold text-white">
+          <p className="text-[13px] font-medium text-caution">Training simulation</p>
+          <button onClick={() => setAreaOpen(true)} className="mt-4 flex min-h-11 items-center gap-1.5 rounded-full border border-white/25 bg-ink/60 px-3 text-left text-[12px] font-semibold text-white">
             <MapPin className="size-3.5 text-sos-bright" /> {areaLabel(profile.homeArea)} <ChevronDown className="size-3" />
           </button>
           {connectivity === "offline" && <button onClick={() => setCallOpen(true)} className="mt-2 flex min-h-11 items-center gap-2 rounded-full border border-[#FFE8C6]/40 bg-[#3E332B]/95 px-3 text-left text-[12px] font-semibold text-white">

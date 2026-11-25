@@ -167,7 +167,7 @@ function PhoneFrame({ children }: { children: ReactNode }) {
       <div className="device">
         <div className="device-screen device-screen-box">
           <StatusBar />
-          {["/", "/request", "/tracking", "/team", "/arrived"].includes(path) && <DemoBadge />}
+          {["/request", "/tracking", "/team", "/arrived"].includes(path) && <DemoBadge />}
           {children}
           <HomeIndicator dark={LIGHT_ROUTES.includes(path)} />
         </div>
