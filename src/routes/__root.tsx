@@ -148,7 +148,12 @@ const WORKSPACES = [
 const LIGHT_ROUTES = ["/summary", "/history", "/profile", "/medical", "/safety", "/driver", "/drill"];
 
 function PhoneFrame({ children }: { children: ReactNode }) {
-  const path = useRouterState({ select: (s) => s.location.pathname });
+  const location = useRouterState({ select: (s) => s.location });
+  const path = location.pathname;
+  const role = new URLSearchParams(location.searchStr).get("role");
+  const activeWorkspace = path === "/drill"
+    ? role === "dispatcher" ? "/drill" : role === "driver" ? "/driver" : "/"
+    : path === "/driver" ? "/driver" : "/";
   return (
     <div className="min-h-dvh md:flex md:items-center md:justify-center md:gap-14 md:py-8">
       <aside className="hidden w-56 md:block" aria-label="Training workspaces">
@@ -157,7 +162,7 @@ function PhoneFrame({ children }: { children: ReactNode }) {
         <ul className="space-y-1">
           {WORKSPACES.map((s) => (
             <li key={s.to}>
-              <Link to={s.to} search={"search" in s ? s.search : undefined} className={"block rounded-xl px-3 py-3 text-sm transition-colors " + (path === s.to ? "bg-ink-2 text-on-photo" : "text-muted-foreground hover:text-on-photo")}>
+              <Link to={s.to} search={"search" in s ? s.search : {}} className={"block rounded-xl px-3 py-3 text-sm transition-colors " + (activeWorkspace === s.to ? "bg-ink-2 text-on-photo" : "text-muted-foreground hover:text-on-photo")}>
                 <span className="block font-semibold">{s.label}</span>
                 <span className="mt-1 block text-on-photo-muted">{s.description}</span>
               </Link>
