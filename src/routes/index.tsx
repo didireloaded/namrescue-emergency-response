@@ -44,6 +44,9 @@ function Home() {
         <div className="mt-3">
           <p className="text-[20px] font-bold tracking-tight text-on-photo"><span className="text-sos-bright">+</span> CareNear</p>
           <p className="text-[13px] font-medium text-caution">Training simulation</p>
+          <Link to="/drill" search={{ role: "citizen" }} className="mt-2 inline-flex min-h-11 items-center rounded-full bg-ink/80 px-3 text-sm font-semibold text-white">
+            Shared training drill
+          </Link>
           <button onClick={() => setAreaOpen(true)} className="mt-4 flex min-h-11 items-center gap-1.5 rounded-full border border-white/25 bg-ink/60 px-3 text-left text-[12px] font-semibold text-white">
             <MapPin className="size-3.5 text-sos-bright" /> {areaLabel(profile.homeArea)} <ChevronDown className="size-3" />
           </button>
@@ -58,13 +61,13 @@ function Home() {
       </header>
       <h1 className="animate-rise relative z-10 mt-auto px-[26px] text-[42px] font-bold leading-[1.03] tracking-tight text-on-photo">Get<br />emergency<br />medical help.</h1>
       <div className="relative z-10 space-y-3 px-5 pb-4 pt-6">
-        <button onClick={openEmergency} className="press shadow-sos flex h-[132px] w-full items-center gap-5 rounded-[28px] border-t border-sos-bright bg-sos px-6 text-left text-on-photo">
+        <button onClick={openEmergency} className="press shadow-sos flex h-[132px] max-[360px]:h-[104px] w-full items-center gap-5 rounded-[28px] border-t border-sos-bright bg-sos px-6 text-left text-on-photo">
           <span className="grid size-16 place-items-center rounded-full bg-on-photo/15"><Ambulance className="size-8" /></span>
           <span><span className="block text-[48px] font-bold leading-none tracking-tight">{incident.status === "arrived" ? "On site" : incident.status === "received" ? "Preview" : incident.status === "assigned" ? "Track" : "SOS"}</span><span className="text-[14px] font-medium opacity-90">{incident.status === "arrived" ? "View arrival details" : incident.status === "received" ? "Not sent to dispatch" : incident.status === "assigned" ? "Ambulance tracking demo" : "Request Ambulance"}</span></span>
         </button>
         <div className="grid grid-cols-2 gap-3">
-          <button onClick={() => setCallOpen(true)} className="press flex h-[88px] flex-col justify-between rounded-[22px] border border-hairline bg-ink-2 p-4 text-left text-on-photo"><Phone className="size-5" /><span className="text-[15px] font-semibold">Call</span></button>
-          <button onClick={() => setSheet("other")} className="press flex h-[88px] flex-col justify-between rounded-[22px] border border-hairline bg-ink-2 p-4 text-left text-on-photo"><Users className="size-5" /><span className="text-[15px] font-semibold">Help Someone Else</span></button>
+          <button onClick={() => setCallOpen(true)} className="press flex h-[88px] max-[360px]:h-[76px] flex-col justify-between rounded-[22px] border border-hairline bg-ink-2 p-4 text-left text-on-photo"><Phone className="size-5" /><span className="text-[15px] font-semibold">Call</span></button>
+          <button onClick={() => setSheet("other")} className="press flex h-[88px] max-[360px]:h-[76px] flex-col justify-between rounded-[22px] border border-hairline bg-ink-2 p-4 text-left text-on-photo"><Users className="size-5" /><span className="text-[15px] font-semibold">Help Someone Else</span></button>
         </div>
       </div>
       <BottomNav active="/" />

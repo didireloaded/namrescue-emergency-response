@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ArrivedRouteImport } from './routes/arrived'
+import { Route as DrillRouteImport } from './routes/drill'
 import { Route as DriverRouteImport } from './routes/driver'
 import { Route as HistoryRouteImport } from './routes/history'
 import { Route as MapRouteImport } from './routes/map'
@@ -30,6 +31,11 @@ const IndexRoute = IndexRouteImport.update({
 const ArrivedRoute = ArrivedRouteImport.update({
   id: '/arrived',
   path: '/arrived',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DrillRoute = DrillRouteImport.update({
+  id: '/drill',
+  path: '/drill',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DriverRoute = DriverRouteImport.update({
@@ -86,6 +92,7 @@ const TrackingRoute = TrackingRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/arrived': typeof ArrivedRoute
+  '/drill': typeof DrillRoute
   '/driver': typeof DriverRoute
   '/history': typeof HistoryRoute
   '/map': typeof MapRoute
@@ -100,6 +107,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/arrived': typeof ArrivedRoute
+  '/drill': typeof DrillRoute
   '/driver': typeof DriverRoute
   '/history': typeof HistoryRoute
   '/map': typeof MapRoute
@@ -115,6 +123,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/arrived': typeof ArrivedRoute
+  '/drill': typeof DrillRoute
   '/driver': typeof DriverRoute
   '/history': typeof HistoryRoute
   '/map': typeof MapRoute
@@ -131,6 +140,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/arrived'
+    | '/drill'
     | '/driver'
     | '/history'
     | '/map'
@@ -145,6 +155,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/arrived'
+    | '/drill'
     | '/driver'
     | '/history'
     | '/map'
@@ -159,6 +170,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/arrived'
+    | '/drill'
     | '/driver'
     | '/history'
     | '/map'
@@ -174,6 +186,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ArrivedRoute: typeof ArrivedRoute
+  DrillRoute: typeof DrillRoute
   DriverRoute: typeof DriverRoute
   HistoryRoute: typeof HistoryRoute
   MapRoute: typeof MapRoute
@@ -200,6 +213,13 @@ declare module '@tanstack/react-router' {
       path: '/arrived'
       fullPath: '/arrived'
       preLoaderRoute: typeof ArrivedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/drill': {
+      id: '/drill'
+      path: '/drill'
+      fullPath: '/drill'
+      preLoaderRoute: typeof DrillRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/driver': {
@@ -278,6 +298,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ArrivedRoute: ArrivedRoute,
+  DrillRoute: DrillRoute,
   DriverRoute: DriverRoute,
   HistoryRoute: HistoryRoute,
   MapRoute: MapRoute,

@@ -3,6 +3,11 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import CareNearDriver from "./CareNearDriver";
 import { driver, VEHICLE_ITEMS } from "@/lib/driver-store";
 
+vi.mock("@tanstack/react-router", () => ({
+  Link: ({ to, children }: { to: string; children: import("react").ReactNode }) =>
+    <a href={to}>{children}</a>,
+}));
+
 vi.mock("@/components/nr/LazyMap", () => ({
   LazyMap: () => <div role="img" aria-label="Illustrative training map"/>,
 }));

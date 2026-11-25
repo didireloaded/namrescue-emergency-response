@@ -144,7 +144,7 @@ const WORKSPACES = [
   { to: "/driver", label: "Driver app", description: "Practice shift checks and dispatch workflows." },
 ] as const;
 
-const LIGHT_ROUTES = ["/summary", "/history", "/profile", "/medical", "/safety", "/driver"];
+const LIGHT_ROUTES = ["/summary", "/history", "/profile", "/medical", "/safety", "/driver", "/drill"];
 
 function PhoneFrame({ children }: { children: ReactNode }) {
   const path = useRouterState({ select: (s) => s.location.pathname });

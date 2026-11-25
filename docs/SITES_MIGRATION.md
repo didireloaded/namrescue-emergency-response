@@ -1,6 +1,6 @@
 # CareNear on ChatGPT Sites
 
-CareNear is a private browser-based training application for Namibia. Use fictional names, sample incidents and map pins in public areas. Citizen and Driver have separate navigation and session stores. Their simulations run independently. A citizen exercise never creates a driver assignment.
+CareNear is a private browser-based training application for Namibia. Use fictional names, sample incidents and map pins in public areas. Citizen and Driver have separate navigation and session stores. The original solo simulations run independently. The Shared training drill links a Citizen request to a paired Driver through Sites D1.
 
 ## Source and design
 
@@ -18,7 +18,16 @@ The two Driver photographs are locally served copies of the licensed Unsplash as
 | Driver dispatch and trips | Offer, accept or decline, route preview, scene and hospital milestones, training handover, trip history | Map providers may load preview tiles or directions. There are no dispatch acknowledgements or verified assignments |
 | Driver communication and safety | Local messages, local check-ins and fatigue status | Voice/video and duress are unavailable. No supervisor, hospital or control room receives a notification |
 
-Application state is held in browser memory. Refresh clears it. CareNear does not operate a training database. Public map/geocoding/routing services receive tile requests, typed place searches or coordinates as applicable. Opening external maps or a device sharing action can hand off data to that provider. The private Sites access gate protects the preview and does not establish operational roles.
+Solo application state is held in browser memory. The shared drill stores only fictional workflow state, versioned status events, pairing metadata and hashed participant keys in Sites D1. The per-role key lives in browser session storage. Public map/geocoding/routing services receive tile requests, typed place searches or coordinates as applicable. Opening external maps or a device sharing action can hand off data to that provider. The private Sites access gate protects the preview and does not establish operational roles.
+
+## Run a shared drill
+
+1. On the Citizen home, open **Shared training drill**, start a drill and share its pairing code with the Driver.
+2. On the Driver workspace, complete Vehicle Check and start a training shift. Open **Shared training drill** and enter the code.
+3. On the Citizen screen, select **Submit practice SOS**. The paired, shift-ready Driver receives a training offer. Have the Driver accept, start the route, confirm arrival, begin transport, confirm the destination and complete the training handover.
+4. Watch the Citizen screen update automatically. Both screens show the confirmed drill timeline. The Driver can return to it through **Trips → Shared drill history**.
+
+The private Site requires authorized Sites access on both devices. The code pairs roles within the exercise and does not grant Site access. Codes expire after 15 minutes, offers after two minutes and drills after four hours. Expired records become inaccessible and are removed in bounded batches when new drills start. A declined or expired offer can be retried by the Citizen. A drill uses one fixed fictional scenario and sends no personal information, device coordinates, messages or alerts to an emergency operator. Training readiness is self-attested by the Driver client from its local checklist and shift status.
 
 ## Production integration design
 
